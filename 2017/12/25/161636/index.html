@@ -1,0 +1,429 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>AtomicInteger的CAS操作 | 种逗南山-hexo博客</title>
+  <meta name="author" content="Liaowz">
+  
+  <meta name="description" content="AtomicInteger的CAS操作">
+  
+  <meta name="Keywords" content="cas,java原子性">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="AtomicInteger的CAS操作"/>
+
+  <meta property="og:site_name" content="种逗南山-hexo博客"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  <link href="/img/favicon.ico" rel="icon" type="image/x-ico">
+  <link rel="alternate" href="/atom.xml" title="种逗南山-hexo博客" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+
+</head>
+
+
+<body>
+  <header id="header" class="inner"><div class="alignleft">
+  <h1><a href="/">种逗南山-hexo博客</a></h1>
+  <h2><a href="/">众里寻他千百度，蓦然回首那人却在灯火阑珊处。</a></h2>
+</div>
+<nav id="main-nav" class="alignright">
+  <ul>
+    
+      <li><a href="/">首页</a></li>
+    
+      <li><a href="/archives">归档</a></li>
+    
+      <li><a href="/about">关于</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+<div class="clearfix"></div>
+</header>
+  <div id="content" class="inner">
+    <div id="main-col" class="alignleft"><div id="wrapper"><article class="post">
+  
+  <div class="post-content">
+    <header>
+      
+        <div class="icon"></div>
+        <time datetime="2017-12-25T08:16:36.000Z"><a href="/2017/12/25/161636/">2017-12-25 16:16:36</a></time>
+      
+      
+  
+    <h1 class="title">AtomicInteger的CAS操作</h1>
+  
+
+    </header>
+    <div class="entry">
+      
+        <p>CAS，Compare and Swap即比较并替换，设计并发算法时常用到的一种技术，Doug lea大神在java同步器中大量使用了CAS技术，鬼斧神工的实现了多线程执行的安全性。<br><a id="more"></a></p>
+<h3 id="什么是CAS"><a href="#什么是CAS" class="headerlink" title="什么是CAS"></a>什么是CAS</h3><p>CAS是一种原子性的操作，确保多线程执行的安全性。</p>
+<p>目前的处理器基本都支持CAS，只不过不同的厂家的实现不一样罢了。CAS有三个操作数：内存值V、旧的预期值A、要修改的值B，当且仅当预期值A和内存值V相同时，将内存值修改为B并返回true，否则什么都不做并返回false。</p>
+<h3 id="实现分析"><a href="#实现分析" class="headerlink" title="实现分析"></a>实现分析</h3><p>先看一段代码：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">public int a = 1;</span><br><span class="line">public boolean compareAndSwapInt(int b) &#123;</span><br><span class="line">    if (a == 1) &#123;</span><br><span class="line">        a = b;</span><br><span class="line">        return true;</span><br><span class="line">    &#125;</span><br><span class="line">    return false;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>试想这段代码在多线程并发下，会发生什么？我们不妨来分析一下：</p>
+<p>线程A执行到 a==1，正准备执行a = b时，线程B也正在运行a = b，并在线程A之前把a修改为2；最后线程A又把a修改成了3。结果就是两个线程同时修改了变量a，显然这种结果是无法符合预期的，无法确定a的值。</p>
+<p>解决方法也很简单，在compareAndSwapInt方法加锁同步，变成一个原子操作，同一时刻只有一个线程才能修改变量a。</p>
+<p>CAS中的比较和替换是一组原子操作，不会被外部打断，先根据paramLong/paramLong1获取到内存当中当前的内存值V，在将内存值V和原值A作比较，要是相等就修改为要修改的值B，属于硬件级别的操作，效率比加锁操作高。</p>
+<p>java.util.concurrent.atomic包下的原子操作类都是基于CAS实现的，接下去我们通过AtomicInteger来看看是如何通过CAS实现原子操作的：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">public class AtomicInteger extends Number implements java.io.Serializable &#123;</span><br><span class="line">    // setup to use Unsafe.compareAndSwapInt for updates</span><br><span class="line">    private static final Unsafe unsafe = Unsafe.getUnsafe();</span><br><span class="line">    private static final long valueOffset;</span><br><span class="line"></span><br><span class="line">    static &#123;</span><br><span class="line">        try &#123;</span><br><span class="line">            valueOffset = unsafe.objectFieldOffset</span><br><span class="line">                (AtomicInteger.class.getDeclaredField(&quot;value&quot;));</span><br><span class="line">        &#125; catch (Exception ex) &#123; throw new Error(ex); &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    private volatile int value;</span><br><span class="line">    public final int get() &#123;return value;&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<ol>
+<li>Unsafe是CAS的核心类，Java无法直接访问底层操作系统，而是通过本地（native）方法来访问。不过尽管如此，JVM还是开了一个后门，JDK中有一个类Unsafe，它提供了硬件级别的原子操作。</li>
+</ol>
+<ol start="2">
+<li>valueOffset表示的是变量值在内存中的偏移地址，因为Unsafe就是根据内存偏移地址获取数据的原值的。</li>
+</ol>
+<ol start="3">
+<li>value是用volatile修饰的，保证了多线程之间看到的value值是同一份。</li>
+</ol>
+<p>接下去，我们看看AtomicInteger是如何实现并发下的累加操作：<br>//jdk1.8实现<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">public final int getAndAdd(int delta) &#123;    </span><br><span class="line">    return unsafe.getAndAddInt(this, valueOffset, delta);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">public final int getAndAddInt(Object var1, long var2, int var4) &#123;</span><br><span class="line">    int var5;</span><br><span class="line">    do &#123;</span><br><span class="line">        var5 = this.getIntVolatile(var1, var2);</span><br><span class="line">    &#125; while(!this.compareAndSwapInt(var1, var2, var5, var5 + var4));</span><br><span class="line">    return var5;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>在jdk1.8中，比较和替换操作放在unsafe类中实现。</p>
+<p>假设现在线程A和线程B同时执行getAndAdd操作：</p>
+<ol>
+<li>AtomicInteger里面的value原始值为3，即主内存中AtomicInteger的value为3，根据Java内存模型，线程A和线程B各自持有一份value的副本，值为3。</li>
+</ol>
+<ol start="2">
+<li>线程A通过getIntVolatile(var1, var2)方法获取到value值3，线程切换，线程A挂起。</li>
+</ol>
+<ol start="3">
+<li>线程B通过getIntVolatile(var1, var2)方法获取到value值3，并利用compareAndSwapInt方法比较内存值也为3，比较成功，修改内存值为2，线程切换，线程B挂起。</li>
+</ol>
+<ol start="4">
+<li>线程A恢复，利用compareAndSwapInt方法比较，发现手里的值3和内存值2不一致，此时value正在被另外一个线程修改，线程A不能修改value值。</li>
+</ol>
+<ol start="5">
+<li>线程的compareAndSwapInt实现，循环判断，重新获取value值，因为value是volatile变量，所以线程对它的修改，线程A总是能够看到。线程A继续利用compareAndSwapInt进行比较并替换，直到compareAndSwapInt修改成功返回true。</li>
+</ol>
+<p>整个过程中，利用CAS保证了对于value的修改的线程安全性。</p>
+<h3 id="CAS的ABA问题"><a href="#CAS的ABA问题" class="headerlink" title="CAS的ABA问题"></a>CAS的ABA问题</h3><p><a href="http://mp.weixin.qq.com/s/nRnQKhiSUrDKu3mz3vItWg" target="_blank" rel="noopener">http://mp.weixin.qq.com/s/nRnQKhiSUrDKu3mz3vItWg</a></p>
+<p>部分转载自：<a href="http://www.jianshu.com/p/fb6e91b013cc" target="_blank" rel="noopener">http://www.jianshu.com/p/fb6e91b013cc</a></p>
+
+      
+    </div>
+    <footer>
+      
+        
+  
+  <div class="categories">
+    <a href="/categories/并发/">并发</a>
+  </div>
+
+        
+	<!-- 注释国外分享组件，加载慢
+        
+  <div class="addthis addthis_toolbox addthis_default_style">
+    
+      <a class="addthis_button_facebook_like" fb:like:layout="button_count"></a>
+    
+    
+      <a class="addthis_button_tweet"></a>
+    
+    
+      <a class="addthis_button_google_plusone" g:plusone:size="medium"></a>
+    
+    
+      <a class="addthis_button_pinterest_pinit" pi:pinit:layout="horizontal"></a>
+    
+    <a class="addthis_counter addthis_pill_style"></a>
+  </div>
+  <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js"></script>
+
+	-->
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+
+
+<!--畅言评论插件start-->
+<!--PC和WAP自适应版-->
+<div id="SOHUCS" sid="http://www.liaowz.com/2017/12/25/161636/" ></div> 
+<script type="text/javascript"> 
+(function(){ 
+var appid = 'cyt4fsQhf'; 
+var conf = 'prod_881782ec7502f89f05db305db86c4d4b'; 
+var width = window.innerWidth || document.documentElement.clientWidth; 
+if (width < 960) { 
+window.document.write('<script id="changyan_mobile_js" charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/mobile/wap-js/changyan_mobile.js?client_id=' + appid + '&conf=' + conf + '"><\/script>'); } else { var loadJs=function(d,a){var c=document.getElementsByTagName("head")[0]||document.head||document.documentElement;var b=document.createElement("script");b.setAttribute("type","text/javascript");b.setAttribute("charset","UTF-8");b.setAttribute("src",d);if(typeof a==="function"){if(window.attachEvent){b.onreadystatechange=function(){var e=b.readyState;if(e==="loaded"||e==="complete"){b.onreadystatechange=null;a()}}}else{b.onload=a}}c.appendChild(b)};loadJs("https://changyan.sohu.com/upload/changyan.js",function(){window.changyan.api.config({appid:appid,conf:conf})}); } })(); </script>
+<!--畅言评论插件end-->
+
+
+
+
+<!-- 注释多说评论插件
+<div class="ds-thread" data-thread-key="/2017/12/25/161636/" data-title="AtomicInteger的CAS操作" data-url="http://www.liaowz.com/2017/12/25/161636/"></div>
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"liaowz"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+</script>
+-->
+
+
+
+
+
+<!-- 注释原代码
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+      <div id="fb-root"></div>
+<script>
+  (function(d, s, id) {
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) return;
+    js = d.createElement(s); js.id = id;
+    js.src = "//connect.facebook.net/en_US/all.js#xfbml=1&appId=123456789012345";
+    fjs.parentNode.insertBefore(js, fjs);
+  }(document, 'script', 'facebook-jssdk'));
+</script>
+
+<div class="fb-comments" data-href="http://www.liaowz.com/2017/12/25/161636/index.html" data-num-posts="5" data-width="840" data-colorscheme="light"></div>
+      
+  
+</section>
+-->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div></div>
+    <aside id="sidebar" class="alignright">
+  <div class="search">
+  <form action="//google.com/search" method="get" accept-charset="utf-8">
+    <input type="search" name="q" results="0" placeholder="搜索">
+    <input type="hidden" name="q" value="site:www.liaowz.com">
+  </form>
+</div>
+
+  
+<div class="widget tag">
+  <h3 class="title">分类</h3>
+  <ul class="entry">
+  
+    <li><a href="/categories/cat/">cat</a><small>1</small></li>
+  
+    <li><a href="/categories/elasticsearch/">elasticsearch</a><small>1</small></li>
+  
+    <li><a href="/categories/git/">git</a><small>4</small></li>
+  
+    <li><a href="/categories/hexo/">hexo</a><small>1</small></li>
+  
+    <li><a href="/categories/idea-IDE/">idea IDE</a><small>2</small></li>
+  
+    <li><a href="/categories/java8/">java8</a><small>3</small></li>
+  
+    <li><a href="/categories/jvm/">jvm</a><small>3</small></li>
+  
+    <li><a href="/categories/kotlin/">kotlin</a><small>3</small></li>
+  
+    <li><a href="/categories/linux/">linux</a><small>1</small></li>
+  
+    <li><a href="/categories/mongodb/">mongodb</a><small>1</small></li>
+  
+    <li><a href="/categories/netty/">netty</a><small>19</small></li>
+  
+    <li><a href="/categories/python/">python</a><small>4</small></li>
+  
+    <li><a href="/categories/rabbitmq/">rabbitmq</a><small>3</small></li>
+  
+    <li><a href="/categories/react/">react</a><small>1</small></li>
+  
+    <li><a href="/categories/redis/">redis</a><small>4</small></li>
+  
+    <li><a href="/categories/spring/">spring</a><small>1</small></li>
+  
+    <li><a href="/categories/springboot/">springboot</a><small>1</small></li>
+  
+    <li><a href="/categories/tool/">tool</a><small>6</small></li>
+  
+    <li><a href="/categories/基础/">基础</a><small>4</small></li>
+  
+    <li><a href="/categories/并发/">并发</a><small>8</small></li>
+  
+    <li><a href="/categories/数据库/">数据库</a><small>2</small></li>
+  
+    <li><a href="/categories/架构/">架构</a><small>3</small></li>
+  
+    <li><a href="/categories/测试/">测试</a><small>1</small></li>
+  
+    <li><a href="/categories/生活/">生活</a><small>2</small></li>
+  
+    <li><a href="/categories/看书/">看书</a><small>1</small></li>
+  
+  </ul>
+</div>
+
+
+<!-- ע��Ĭ�Ϸ������
+
+
+
+-->
+
+
+<!-- �����������
+
+
+
+<div class="widget tag">
+  <h3 class="title">分类</h3>
+     <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/cat/">cat</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/elasticsearch/">elasticsearch</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/git/">git</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/hexo/">hexo</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/idea-IDE/">idea IDE</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/java8/">java8</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/jvm/">jvm</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/kotlin/">kotlin</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/linux/">linux</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/mongodb/">mongodb</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/netty/">netty</a><span class="category-list-count">19</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/python/">python</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/rabbitmq/">rabbitmq</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/react/">react</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/redis/">redis</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/spring/">spring</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/springboot/">springboot</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/tool/">tool</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/基础/">基础</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/并发/">并发</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/">数据库</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/架构/">架构</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/测试/">测试</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/生活/">生活</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/看书/">看书</a><span class="category-list-count">1</span></li></ul> 
+</div>
+
+
+
+-->
+
+  
+<div class="widget tag">
+  <h3 class="title">标签</h3>
+  <ul class="entry">
+  
+    <li><a href="/tags/HashMap/">HashMap</a><small>1</small></li>
+  
+    <li><a href="/tags/NIO/">NIO</a><small>5</small></li>
+  
+    <li><a href="/tags/effective-java-3/">effective java 3</a><small>1</small></li>
+  
+    <li><a href="/tags/gradle/">gradle</a><small>1</small></li>
+  
+    <li><a href="/tags/grpc/">grpc</a><small>1</small></li>
+  
+    <li><a href="/tags/hexo/">hexo</a><small>1</small></li>
+  
+    <li><a href="/tags/http/">http</a><small>1</small></li>
+  
+    <li><a href="/tags/idea/">idea</a><small>2</small></li>
+  
+    <li><a href="/tags/java8/">java8</a><small>2</small></li>
+  
+    <li><a href="/tags/jedis/">jedis</a><small>1</small></li>
+  
+    <li><a href="/tags/json/">json</a><small>1</small></li>
+  
+    <li><a href="/tags/linux/">linux</a><small>1</small></li>
+  
+    <li><a href="/tags/maven/">maven</a><small>1</small></li>
+  
+    <li><a href="/tags/netty源码/">netty源码</a><small>3</small></li>
+  
+    <li><a href="/tags/nosql/">nosql</a><small>1</small></li>
+  
+    <li><a href="/tags/react/">react</a><small>1</small></li>
+  
+    <li><a href="/tags/redis/">redis</a><small>3</small></li>
+  
+    <li><a href="/tags/rpc/">rpc</a><small>2</small></li>
+  
+    <li><a href="/tags/spel/">spel</a><small>1</small></li>
+  
+    <li><a href="/tags/thrift/">thrift</a><small>1</small></li>
+  
+    <li><a href="/tags/websocket/">websocket</a><small>2</small></li>
+  
+    <li><a href="/tags/健康/">健康</a><small>2</small></li>
+  
+    <li><a href="/tags/命令/">命令</a><small>2</small></li>
+  
+    <li><a href="/tags/镜像/">镜像</a><small>1</small></li>
+  
+  </ul>
+</div>
+
+
+  
+<div class="widget tag">
+  <h3 class="title">最新文章</h3>
+  <ul class="entry">
+    
+      <li>
+        <a href="/2018/07/21/212047/">mongodb安装（Windows）</a>
+      </li>
+    
+      <li>
+        <a href="/2018/07/20/111747/">Dianping CAT 安装说明文档</a>
+      </li>
+    
+      <li>
+        <a href="/2018/06/29/143647/">effective java 3</a>
+      </li>
+    
+      <li>
+        <a href="/2018/06/03/142947/">spring boot笔记</a>
+      </li>
+    
+      <li>
+        <a href="/2018/04/02/211447/">轻松搭建Redis缓存高可用集群</a>
+      </li>
+    
+  </ul>
+</div>
+
+
+  <div class="widget tag">
+<h3 class="title">友情链接</h3>
+<ul class="entry">
+<li><a href="http://www.baidu.com/" title="百度">百度</a></li>
+<li><a href="http://www.sina.com.cn" title="新浪">新浪</a></li>
+<li><a href="http://maciektalaska.github.io" title="maciektalaska">maciektalaska</a></li>
+<li><a href="http://x.bbyc.cn/" title="maciektalaska">神的禁区</a></li>
+
+
+</ul>
+</div>
+
+  <iframe width="100%" height="600" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=600&fansRow=1&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=1&isFans=1&uid=2064204680&verifier=b3464355&dpc=1"></iframe>
+</aside>
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div class="alignleft">
+  
+  Copyright &copy; 2018 Liaowz 鄂ICP备15016859号-1
+  
+</div>
+<div class="clearfix"></div></footer>
+  <script src="https://code.jquery.com/jquery-2.0.3.js" integrity="sha256-lCf+LfUffUxr81+W0ZFpcU0LQyuZ3Bj0F2DQNCxTgSI=" crossorigin="anonymous"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+  $('.fancybox').fancybox();
+})(jQuery);
+</script>
+
+</body>
+</html>

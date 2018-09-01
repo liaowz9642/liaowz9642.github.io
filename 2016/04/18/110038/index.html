@@ -1,0 +1,406 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>使用spel解析json | 种逗南山-hexo博客</title>
+  <meta name="author" content="Liaowz">
+  
+  <meta name="description" content="spel简单使用，使用spel处理json">
+  
+  <meta name="Keywords" content="spel用法,json解析">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="使用spel解析json"/>
+
+  <meta property="og:site_name" content="种逗南山-hexo博客"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  <link href="/img/favicon.ico" rel="icon" type="image/x-ico">
+  <link rel="alternate" href="/atom.xml" title="种逗南山-hexo博客" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+
+</head>
+
+
+<body>
+  <header id="header" class="inner"><div class="alignleft">
+  <h1><a href="/">种逗南山-hexo博客</a></h1>
+  <h2><a href="/">众里寻他千百度，蓦然回首那人却在灯火阑珊处。</a></h2>
+</div>
+<nav id="main-nav" class="alignright">
+  <ul>
+    
+      <li><a href="/">首页</a></li>
+    
+      <li><a href="/archives">归档</a></li>
+    
+      <li><a href="/about">关于</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+<div class="clearfix"></div>
+</header>
+  <div id="content" class="inner">
+    <div id="main-col" class="alignleft"><div id="wrapper"><article class="post">
+  
+  <div class="post-content">
+    <header>
+      
+        <div class="icon"></div>
+        <time datetime="2016-04-18T03:00:38.000Z"><a href="/2016/04/18/110038/">2016-04-18 11:00:38</a></time>
+      
+      
+  
+    <h1 class="title">使用spel解析json</h1>
+  
+
+    </header>
+    <div class="entry">
+      
+        <p>spel简单使用，使用spel处理json<br><a id="more"></a></p>
+<h3 id="spel解析字符串表达式"><a href="#spel解析字符串表达式" class="headerlink" title="spel解析字符串表达式"></a>spel解析字符串表达式</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ExpressionParser parser = new SpelExpressionParser();</span><br><span class="line">Expression exp = parser.parseExpression(&quot;&apos;Hello World&apos;&quot;);</span><br><span class="line">String message = (String) exp.getValue();</span><br></pre></td></tr></table></figure>
+<h3 id="还可以是"><a href="#还可以是" class="headerlink" title="还可以是"></a>还可以是</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">parser.parseExpression(&quot;new String(&apos;hello world&apos;).toUpperCase()&quot;);</span><br><span class="line">parser.parseExpression(&quot;2*3 + 4 - 5/6.0&quot;);</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>(T) new SpelExpressionParser().parseExpression(exp).getValue(context);</p>
+</blockquote>
+<p>更多spel使用查看: <a href="http://docs.spring.io/spring/docs/4.3.0.BUILD-SNAPSHOT/spring-framework-reference/htmlsingle/#expressions-evaluation" target="_blank" rel="noopener">官方文档</a></p>
+<h3 id="xml配置"><a href="#xml配置" class="headerlink" title="xml配置"></a>xml配置</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&lt;bean id=&quot;numberGuess&quot; class=&quot;org.spring.samples.NumberGuess&quot;&gt;</span><br><span class="line">    &lt;property name=&quot;randomNumber&quot; value=&quot;#&#123; T(java.lang.Math).random() * 100.0 &#125;&quot;/&gt;</span><br><span class="line">&lt;/bean&gt;</span><br><span class="line"></span><br><span class="line">&lt;bean id=&quot;shapeGuess&quot; class=&quot;org.spring.samples.ShapeGuess&quot;&gt;</span><br><span class="line">    &lt;property name=&quot;initialShapeSeed&quot; value=&quot;#&#123; numberGuess.randomNumber &#125;&quot;/&gt;</span><br><span class="line">&lt;/bean&gt;</span><br></pre></td></tr></table></figure>
+<h3 id="Annotation-based-configuration"><a href="#Annotation-based-configuration" class="headerlink" title="Annotation-based configuration"></a>Annotation-based configuration</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">public static class FieldValueTestBean</span><br><span class="line"></span><br><span class="line">    @Value(&quot;#&#123; systemProperties[&apos;user.region&apos;] &#125;&quot;)</span><br><span class="line">    private String defaultLocale;</span><br><span class="line"></span><br><span class="line">    public void setDefaultLocale(String defaultLocale) &#123;</span><br><span class="line">        this.defaultLocale = defaultLocale;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public String getDefaultLocale() &#123;</span><br><span class="line">        return this.defaultLocale;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="处理json类"><a href="#处理json类" class="headerlink" title="处理json类"></a>处理json类</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line">package com.example;</span><br><span class="line"></span><br><span class="line">import org.springframework.expression.spel.standard.SpelExpressionParser;</span><br><span class="line">import org.springframework.expression.spel.support.StandardEvaluationContext;</span><br><span class="line"></span><br><span class="line">import java.io.Serializable;</span><br><span class="line">import java.util.Map;</span><br><span class="line"></span><br><span class="line">public class Jpel implements Serializable&#123;</span><br><span class="line"></span><br><span class="line">    private static final long serialVersionUID = 1L;</span><br><span class="line"></span><br><span class="line">    private StandardEvaluationContext evaluationContext;</span><br><span class="line"></span><br><span class="line">    private Map&lt;Object,Object&gt; mapping = null;</span><br><span class="line"></span><br><span class="line">    public Jpel(Map&lt;Object, Object&gt; mapping) &#123;</span><br><span class="line">        Preconditions.checkNotNull(mapping, &quot;arg is null&quot;);</span><br><span class="line">        this.mapping = mapping;</span><br><span class="line">        this.evaluationContext = new StandardEvaluationContext(mapping);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public String getButtonName() &#123;</span><br><span class="line">        return eval(&quot;#root[&apos;button&apos;][0][name]&quot;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /*The StandardEvaluationContext is relatively expensive to construct</span><br><span class="line">     and during repeated usage it builds up cached state that enables subsequent expression evaluations</span><br><span class="line">     to be performed more quickly. For this reason it is better to cache and reuse them where possible, </span><br><span class="line">    rather than construct a new one for each expression evaluation.</span><br><span class="line">    * */</span><br><span class="line">    @SuppressWarnings(&quot;unchecked&quot;)</span><br><span class="line">    private &lt;T&gt; T eval(String exp) &#123;</span><br><span class="line">        return (T) new SpelExpressionParser().parseExpression(exp).getValue(evaluationContext);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    @SuppressWarnings(&quot;unchecked&quot;)</span><br><span class="line">    private &lt;T&gt; T parseExp(String exp) &#123;</span><br><span class="line">        return (T) new SpelExpressionParser().parseExpression(exp).getValue(mapping);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="测试调用"><a href="#测试调用" class="headerlink" title="测试调用"></a>测试调用</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line">package com.example;</span><br><span class="line"></span><br><span class="line">import org.codehaus.jackson.map.ObjectMapper;</span><br><span class="line">import org.springframework.boot.SpringApplication;</span><br><span class="line">import org.springframework.boot.autoconfigure.SpringBootApplication;</span><br><span class="line">import org.springframework.expression.spel.standard.SpelExpressionParser;</span><br><span class="line"></span><br><span class="line">import java.io.IOException;</span><br><span class="line">import java.io.InputStream;</span><br><span class="line">import java.util.Map;</span><br><span class="line"></span><br><span class="line">@SpringBootApplication</span><br><span class="line">public class DemoApplication &#123;</span><br><span class="line"></span><br><span class="line">	public static void main(String[] args) &#123;</span><br><span class="line"></span><br><span class="line">	Map map = jsonToMap(DemoApplication.class.getClassLoader().getResourceAsStream(&quot;menu.json&quot;));</span><br><span class="line">        String buttonName = new Jpel(map).getButtonName();</span><br><span class="line">        System.out.println(buttonName);</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">	public static Map jsonToMap(String json)&#123;</span><br><span class="line">		Map&lt;?, ?&gt; map = null;</span><br><span class="line">		ObjectMapper mapper = new ObjectMapper();</span><br><span class="line">		try &#123;</span><br><span class="line">			map = mapper.readValue(json, Map.class);</span><br><span class="line">		&#125; catch (IOException e) &#123;</span><br><span class="line">			System.err.println(&quot;json to map error&quot;);</span><br><span class="line">		&#125;</span><br><span class="line">		return map;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	public static Map jsonToMap(InputStream inputStream)&#123;</span><br><span class="line">		Map&lt;?, ?&gt; map = null;</span><br><span class="line">		ObjectMapper mapper = new ObjectMapper();</span><br><span class="line">		try &#123;</span><br><span class="line">			map = mapper.readValue(inputStream,Map.class);</span><br><span class="line">		&#125; catch (IOException e) &#123;</span><br><span class="line">			System.err.println(&quot;json to map error&quot;);</span><br><span class="line">		&#125;</span><br><span class="line">		return map;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="json转map-maven依赖"><a href="#json转map-maven依赖" class="headerlink" title="json转map maven依赖"></a>json转map maven依赖</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&lt;dependency&gt;</span><br><span class="line">	&lt;groupId&gt;org.codehaus.jackson&lt;/groupId&gt;</span><br><span class="line">	&lt;artifactId&gt;jackson-core-asl&lt;/artifactId&gt;</span><br><span class="line">	&lt;version&gt;1.9.3&lt;/version&gt;</span><br><span class="line">&lt;/dependency&gt;</span><br><span class="line">&lt;dependency&gt;</span><br><span class="line">	&lt;groupId&gt;org.codehaus.jackson&lt;/groupId&gt;</span><br><span class="line">	&lt;artifactId&gt;jackson-mapper-asl&lt;/artifactId&gt;</span><br><span class="line">	&lt;version&gt;1.9.3&lt;/version&gt;</span><br><span class="line">&lt;/dependency&gt;</span><br></pre></td></tr></table></figure>
+      
+    </div>
+    <footer>
+      
+        
+  
+  <div class="categories">
+    <a href="/categories/spring/">spring</a>
+  </div>
+
+        
+  
+  <div class="tags">
+    <a href="/tags/spel/">spel</a>, <a href="/tags/json/">json</a>
+  </div>
+
+	<!-- 注释国外分享组件，加载慢
+        
+  <div class="addthis addthis_toolbox addthis_default_style">
+    
+      <a class="addthis_button_facebook_like" fb:like:layout="button_count"></a>
+    
+    
+      <a class="addthis_button_tweet"></a>
+    
+    
+      <a class="addthis_button_google_plusone" g:plusone:size="medium"></a>
+    
+    
+      <a class="addthis_button_pinterest_pinit" pi:pinit:layout="horizontal"></a>
+    
+    <a class="addthis_counter addthis_pill_style"></a>
+  </div>
+  <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js"></script>
+
+	-->
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+
+
+<!--畅言评论插件start-->
+<!--PC和WAP自适应版-->
+<div id="SOHUCS" sid="http://www.liaowz.com/2016/04/18/110038/" ></div> 
+<script type="text/javascript"> 
+(function(){ 
+var appid = 'cyt4fsQhf'; 
+var conf = 'prod_881782ec7502f89f05db305db86c4d4b'; 
+var width = window.innerWidth || document.documentElement.clientWidth; 
+if (width < 960) { 
+window.document.write('<script id="changyan_mobile_js" charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/mobile/wap-js/changyan_mobile.js?client_id=' + appid + '&conf=' + conf + '"><\/script>'); } else { var loadJs=function(d,a){var c=document.getElementsByTagName("head")[0]||document.head||document.documentElement;var b=document.createElement("script");b.setAttribute("type","text/javascript");b.setAttribute("charset","UTF-8");b.setAttribute("src",d);if(typeof a==="function"){if(window.attachEvent){b.onreadystatechange=function(){var e=b.readyState;if(e==="loaded"||e==="complete"){b.onreadystatechange=null;a()}}}else{b.onload=a}}c.appendChild(b)};loadJs("https://changyan.sohu.com/upload/changyan.js",function(){window.changyan.api.config({appid:appid,conf:conf})}); } })(); </script>
+<!--畅言评论插件end-->
+
+
+
+
+<!-- 注释多说评论插件
+<div class="ds-thread" data-thread-key="/2016/04/18/110038/" data-title="使用spel解析json" data-url="http://www.liaowz.com/2016/04/18/110038/"></div>
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"liaowz"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+</script>
+-->
+
+
+
+
+
+<!-- 注释原代码
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+      <div id="fb-root"></div>
+<script>
+  (function(d, s, id) {
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) return;
+    js = d.createElement(s); js.id = id;
+    js.src = "//connect.facebook.net/en_US/all.js#xfbml=1&appId=123456789012345";
+    fjs.parentNode.insertBefore(js, fjs);
+  }(document, 'script', 'facebook-jssdk'));
+</script>
+
+<div class="fb-comments" data-href="http://www.liaowz.com/2016/04/18/110038/index.html" data-num-posts="5" data-width="840" data-colorscheme="light"></div>
+      
+  
+</section>
+-->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div></div>
+    <aside id="sidebar" class="alignright">
+  <div class="search">
+  <form action="//google.com/search" method="get" accept-charset="utf-8">
+    <input type="search" name="q" results="0" placeholder="搜索">
+    <input type="hidden" name="q" value="site:www.liaowz.com">
+  </form>
+</div>
+
+  
+<div class="widget tag">
+  <h3 class="title">分类</h3>
+  <ul class="entry">
+  
+    <li><a href="/categories/cat/">cat</a><small>1</small></li>
+  
+    <li><a href="/categories/elasticsearch/">elasticsearch</a><small>1</small></li>
+  
+    <li><a href="/categories/git/">git</a><small>4</small></li>
+  
+    <li><a href="/categories/hexo/">hexo</a><small>1</small></li>
+  
+    <li><a href="/categories/idea-IDE/">idea IDE</a><small>2</small></li>
+  
+    <li><a href="/categories/java8/">java8</a><small>3</small></li>
+  
+    <li><a href="/categories/jvm/">jvm</a><small>3</small></li>
+  
+    <li><a href="/categories/kotlin/">kotlin</a><small>3</small></li>
+  
+    <li><a href="/categories/linux/">linux</a><small>1</small></li>
+  
+    <li><a href="/categories/mongodb/">mongodb</a><small>1</small></li>
+  
+    <li><a href="/categories/netty/">netty</a><small>19</small></li>
+  
+    <li><a href="/categories/python/">python</a><small>4</small></li>
+  
+    <li><a href="/categories/rabbitmq/">rabbitmq</a><small>3</small></li>
+  
+    <li><a href="/categories/react/">react</a><small>1</small></li>
+  
+    <li><a href="/categories/redis/">redis</a><small>4</small></li>
+  
+    <li><a href="/categories/spring/">spring</a><small>1</small></li>
+  
+    <li><a href="/categories/springboot/">springboot</a><small>1</small></li>
+  
+    <li><a href="/categories/tool/">tool</a><small>6</small></li>
+  
+    <li><a href="/categories/基础/">基础</a><small>4</small></li>
+  
+    <li><a href="/categories/并发/">并发</a><small>8</small></li>
+  
+    <li><a href="/categories/数据库/">数据库</a><small>2</small></li>
+  
+    <li><a href="/categories/架构/">架构</a><small>3</small></li>
+  
+    <li><a href="/categories/测试/">测试</a><small>1</small></li>
+  
+    <li><a href="/categories/生活/">生活</a><small>2</small></li>
+  
+    <li><a href="/categories/看书/">看书</a><small>1</small></li>
+  
+  </ul>
+</div>
+
+
+<!-- ע��Ĭ�Ϸ������
+
+
+
+-->
+
+
+<!-- �����������
+
+
+
+<div class="widget tag">
+  <h3 class="title">分类</h3>
+     <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/cat/">cat</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/elasticsearch/">elasticsearch</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/git/">git</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/hexo/">hexo</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/idea-IDE/">idea IDE</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/java8/">java8</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/jvm/">jvm</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/kotlin/">kotlin</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/linux/">linux</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/mongodb/">mongodb</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/netty/">netty</a><span class="category-list-count">19</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/python/">python</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/rabbitmq/">rabbitmq</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/react/">react</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/redis/">redis</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/spring/">spring</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/springboot/">springboot</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/tool/">tool</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/基础/">基础</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/并发/">并发</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/">数据库</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/架构/">架构</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/测试/">测试</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/生活/">生活</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/看书/">看书</a><span class="category-list-count">1</span></li></ul> 
+</div>
+
+
+
+-->
+
+  
+<div class="widget tag">
+  <h3 class="title">标签</h3>
+  <ul class="entry">
+  
+    <li><a href="/tags/HashMap/">HashMap</a><small>1</small></li>
+  
+    <li><a href="/tags/NIO/">NIO</a><small>5</small></li>
+  
+    <li><a href="/tags/effective-java-3/">effective java 3</a><small>1</small></li>
+  
+    <li><a href="/tags/gradle/">gradle</a><small>1</small></li>
+  
+    <li><a href="/tags/grpc/">grpc</a><small>1</small></li>
+  
+    <li><a href="/tags/hexo/">hexo</a><small>1</small></li>
+  
+    <li><a href="/tags/http/">http</a><small>1</small></li>
+  
+    <li><a href="/tags/idea/">idea</a><small>2</small></li>
+  
+    <li><a href="/tags/java8/">java8</a><small>2</small></li>
+  
+    <li><a href="/tags/jedis/">jedis</a><small>1</small></li>
+  
+    <li><a href="/tags/json/">json</a><small>1</small></li>
+  
+    <li><a href="/tags/linux/">linux</a><small>1</small></li>
+  
+    <li><a href="/tags/maven/">maven</a><small>1</small></li>
+  
+    <li><a href="/tags/netty源码/">netty源码</a><small>3</small></li>
+  
+    <li><a href="/tags/nosql/">nosql</a><small>1</small></li>
+  
+    <li><a href="/tags/react/">react</a><small>1</small></li>
+  
+    <li><a href="/tags/redis/">redis</a><small>3</small></li>
+  
+    <li><a href="/tags/rpc/">rpc</a><small>2</small></li>
+  
+    <li><a href="/tags/spel/">spel</a><small>1</small></li>
+  
+    <li><a href="/tags/thrift/">thrift</a><small>1</small></li>
+  
+    <li><a href="/tags/websocket/">websocket</a><small>2</small></li>
+  
+    <li><a href="/tags/健康/">健康</a><small>2</small></li>
+  
+    <li><a href="/tags/命令/">命令</a><small>2</small></li>
+  
+    <li><a href="/tags/镜像/">镜像</a><small>1</small></li>
+  
+  </ul>
+</div>
+
+
+  
+<div class="widget tag">
+  <h3 class="title">最新文章</h3>
+  <ul class="entry">
+    
+      <li>
+        <a href="/2018/07/21/212047/">mongodb安装（Windows）</a>
+      </li>
+    
+      <li>
+        <a href="/2018/07/20/111747/">Dianping CAT 安装说明文档</a>
+      </li>
+    
+      <li>
+        <a href="/2018/06/29/143647/">effective java 3</a>
+      </li>
+    
+      <li>
+        <a href="/2018/06/03/142947/">spring boot笔记</a>
+      </li>
+    
+      <li>
+        <a href="/2018/04/02/211447/">轻松搭建Redis缓存高可用集群</a>
+      </li>
+    
+  </ul>
+</div>
+
+
+  <div class="widget tag">
+<h3 class="title">友情链接</h3>
+<ul class="entry">
+<li><a href="http://www.baidu.com/" title="百度">百度</a></li>
+<li><a href="http://www.sina.com.cn" title="新浪">新浪</a></li>
+<li><a href="http://maciektalaska.github.io" title="maciektalaska">maciektalaska</a></li>
+<li><a href="http://x.bbyc.cn/" title="maciektalaska">神的禁区</a></li>
+
+
+</ul>
+</div>
+
+  <iframe width="100%" height="600" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=600&fansRow=1&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=1&isFans=1&uid=2064204680&verifier=b3464355&dpc=1"></iframe>
+</aside>
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div class="alignleft">
+  
+  Copyright &copy; 2018 Liaowz 鄂ICP备15016859号-1
+  
+</div>
+<div class="clearfix"></div></footer>
+  <script src="https://code.jquery.com/jquery-2.0.3.js" integrity="sha256-lCf+LfUffUxr81+W0ZFpcU0LQyuZ3Bj0F2DQNCxTgSI=" crossorigin="anonymous"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+  $('.fancybox').fancybox();
+})(jQuery);
+</script>
+
+</body>
+</html>

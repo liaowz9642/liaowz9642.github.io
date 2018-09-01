@@ -1,0 +1,415 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>并发工具类介绍 | 种逗南山-hexo博客</title>
+  <meta name="author" content="Liaowz">
+  
+  <meta name="description" content="CountDownLatch、CyclicBarrier、Semaphore、Exchanger的用法。">
+  
+  <meta name="Keywords" content="并发工具类">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="并发工具类介绍"/>
+
+  <meta property="og:site_name" content="种逗南山-hexo博客"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  <link href="/img/favicon.ico" rel="icon" type="image/x-ico">
+  <link rel="alternate" href="/atom.xml" title="种逗南山-hexo博客" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+
+</head>
+
+
+<body>
+  <header id="header" class="inner"><div class="alignleft">
+  <h1><a href="/">种逗南山-hexo博客</a></h1>
+  <h2><a href="/">众里寻他千百度，蓦然回首那人却在灯火阑珊处。</a></h2>
+</div>
+<nav id="main-nav" class="alignright">
+  <ul>
+    
+      <li><a href="/">首页</a></li>
+    
+      <li><a href="/archives">归档</a></li>
+    
+      <li><a href="/about">关于</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+<div class="clearfix"></div>
+</header>
+  <div id="content" class="inner">
+    <div id="main-col" class="alignleft"><div id="wrapper"><article class="post">
+  
+  <div class="post-content">
+    <header>
+      
+        <div class="icon"></div>
+        <time datetime="2017-11-29T09:32:32.000Z"><a href="/2017/11/29/173232/">2017-11-29 17:32:32</a></time>
+      
+      
+  
+    <h1 class="title">并发工具类介绍</h1>
+  
+
+    </header>
+    <div class="entry">
+      
+        <p>CountDownLatch、CyclicBarrier、Semaphore、Exchanger的用法。<br><a id="more"></a></p>
+<h3 id="join"><a href="#join" class="headerlink" title="join"></a>join</h3><p>jdk1.5之前，join用于让当前执行线程等待join线程执行结束。其实现原理是不停检查join线程是否存活，如果join线程存活则让当前线程永远等待。直到join线程中止后，线程的this.notifyAll()方法会被调用，调用notifyAll()方法是在JVM里实现的，所以在JDK里看不到，大家可以查看JVM源码。</p>
+<p>示例代码：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">public class JoinCountDownLatchTest &#123;</span><br><span class="line">public static void main(String[] args) throws InterruptedException &#123;</span><br><span class="line">Thread parser1 = new Thread(new Runnable() &#123;</span><br><span class="line">@Override</span><br><span class="line">public void run() &#123;</span><br><span class="line">System.out.println(&quot;parser1 finish&quot;);</span><br><span class="line">&#125;</span><br><span class="line">&#125;);</span><br><span class="line">Thread parser2 = new Thread(new Runnable() &#123;</span><br><span class="line">@Override</span><br><span class="line">public void run() &#123;</span><br><span class="line">System.out.println(&quot;parser2 finish&quot;);</span><br><span class="line">&#125;</span><br><span class="line">&#125;);</span><br><span class="line">parser1.start();</span><br><span class="line">parser2.start();</span><br><span class="line">parser1.join();</span><br><span class="line">parser2.join();</span><br><span class="line">System.out.println(&quot;all parser finish&quot;);</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="CountDownLatch"><a href="#CountDownLatch" class="headerlink" title="CountDownLatch"></a>CountDownLatch</h3><p>在JDK 1.5之后的并发包中提供的CountDownLatch也可以实现join的功能，并且比join的功能更多。CountDownLatch允许一个或多个线程等待其他线程完成操作。</p>
+<p>官方示例代码:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">* class Driver &#123; // ...</span><br><span class="line"> *   void main() throws InterruptedException &#123;</span><br><span class="line"> *     CountDownLatch startSignal = new CountDownLatch(1);</span><br><span class="line"> *     CountDownLatch doneSignal = new CountDownLatch(N);</span><br><span class="line"> *</span><br><span class="line"> *     for (int i = 0; i &lt; N; ++i) // create and start threads</span><br><span class="line"> *       new Thread(new Worker(startSignal, doneSignal)).start();</span><br><span class="line"> *</span><br><span class="line"> *     doSomethingElse();            // don&apos;t let run yet</span><br><span class="line"> *     startSignal.countDown();      // let all threads proceed</span><br><span class="line"> *     doSomethingElse();</span><br><span class="line"> *     doneSignal.await();           // wait for all to finish</span><br><span class="line"> *   &#125;</span><br><span class="line"> * &#125;</span><br><span class="line"> *</span><br><span class="line"> * class Worker implements Runnable &#123;</span><br><span class="line"> *   private final CountDownLatch startSignal;</span><br><span class="line"> *   private final CountDownLatch doneSignal;</span><br><span class="line"> *   Worker(CountDownLatch startSignal, CountDownLatch doneSignal) &#123;</span><br><span class="line"> *      this.startSignal = startSignal;</span><br><span class="line"> *      this.doneSignal = doneSignal;</span><br><span class="line"> *   &#125;</span><br><span class="line"> *   public void run() &#123;</span><br><span class="line"> *      try &#123;</span><br><span class="line"> *        startSignal.await();</span><br><span class="line"> *        doWork();</span><br><span class="line"> *        doneSignal.countDown();</span><br><span class="line"> *      &#125; catch (InterruptedException ex) &#123;&#125; // return;</span><br><span class="line"> *   &#125;</span><br><span class="line"> *</span><br><span class="line"> *   void doWork() &#123; ... &#125;</span><br><span class="line"> * &#125;</span><br></pre></td></tr></table></figure>
+<p>如果有某个线程处理得比较慢，我们不可能让主线程一直等待，所以可以使用另外一个带指定时间的await方法——await（long time，TimeUnit unit），这个方法等待特定时间后，就会不再阻塞当前线程。</p>
+<blockquote>
+<p>计数器必须大于等于0，只是等于0时候，计数器就是零，调用await方法时不会阻塞当前线程。CountDownLatch不可能重新初始化或者修改CountDownLatch对象的内部计数器的值。一个线程调用countDown方法happen-before，另外一个线程调用await方法。</p>
+</blockquote>
+<h3 id="CyclicBarrier"><a href="#CyclicBarrier" class="headerlink" title="CyclicBarrier"></a>CyclicBarrier</h3><p>CyclicBarrier的字面意思是可循环使用（Cyclic）的屏障（Barrier）。它要做的事情是，让一组线程到达一个屏障（也可以叫同步点）时被阻塞，直到最后一个线程到达屏障时，屏障才会开门，所有被屏障拦截的线程才会继续运行。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">package com.liaowz.concurrent.thread;</span><br><span class="line"></span><br><span class="line">import java.util.concurrent.CyclicBarrier;</span><br><span class="line"></span><br><span class="line">public class CyclicBarrierTest &#123;</span><br><span class="line">    static CyclicBarrier c = new CyclicBarrier(2, new A());</span><br><span class="line"></span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line">        new Thread(new Runnable() &#123;</span><br><span class="line">            @Override</span><br><span class="line">            public void run() &#123;</span><br><span class="line">                try &#123;</span><br><span class="line">                    c.await();</span><br><span class="line">                &#125; catch (Exception e) &#123;</span><br><span class="line">                &#125;</span><br><span class="line">                System.out.println(1);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;).start();</span><br><span class="line">        try &#123;</span><br><span class="line">            c.await();</span><br><span class="line">        &#125; catch (Exception e) &#123;</span><br><span class="line">        &#125;</span><br><span class="line">        System.out.println(2);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    static class A implements Runnable &#123;</span><br><span class="line">        @Override</span><br><span class="line">        public void run() &#123;</span><br><span class="line">            System.out.println(3);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>查看c.await()源码：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">int index = --count;</span><br><span class="line">if (index == 0) &#123;  // tripped</span><br><span class="line">    boolean ranAction = false;</span><br><span class="line">    try &#123;</span><br><span class="line">        final Runnable command = barrierCommand;</span><br><span class="line">        if (command != null)</span><br><span class="line">            command.run();</span><br><span class="line">        ranAction = true;</span><br><span class="line">        nextGeneration();</span><br><span class="line">        return 0;</span><br><span class="line">    &#125; finally &#123;</span><br><span class="line">        if (!ranAction)</span><br><span class="line">            breakBarrier();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<blockquote>
+<p>当屏障变为0时，new A()才会执行。</p>
+</blockquote>
+<p>运用场景：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br></pre></td><td class="code"><pre><span class="line">package com.liaowz.concurrent.thread;</span><br><span class="line"></span><br><span class="line">import java.util.Map.Entry;</span><br><span class="line">import java.util.concurrent.ConcurrentHashMap;</span><br><span class="line">import java.util.concurrent.CyclicBarrier;</span><br><span class="line">import java.util.concurrent.Executor;</span><br><span class="line">import java.util.concurrent.Executors;</span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * 银行流水处理服务类</span><br><span class="line"> * *</span><br><span class="line"> * @authorftf *</span><br><span class="line"> */</span><br><span class="line"></span><br><span class="line">public class BankWaterService implements Runnable &#123;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 创建4个屏障，处理完之后执行当前类的run方法</span><br><span class="line">     */</span><br><span class="line">    private CyclicBarrier c = new CyclicBarrier(4, this);</span><br><span class="line">    /**</span><br><span class="line">     * 假设只有4个sheet，所以只启动4个线程</span><br><span class="line">     */</span><br><span class="line">    private Executor executor = Executors.newFixedThreadPool(4);</span><br><span class="line">    /**</span><br><span class="line">     * 保存每个sheet计算出的银流结果</span><br><span class="line">     */</span><br><span class="line">    private ConcurrentHashMap&lt;String, Integer&gt; sheetBankWaterCount = new ConcurrentHashMap&lt;String, Integer&gt;();</span><br><span class="line"></span><br><span class="line">    private void count() &#123;</span><br><span class="line">        for (int i = 0; i &lt; 4; i++) &#123;</span><br><span class="line">            executor.execute(new Runnable() &#123;</span><br><span class="line">                @Override</span><br><span class="line">                public void run() &#123;</span><br><span class="line">                    // 计算当前sheet的银流数据，计算代码省略</span><br><span class="line">                    sheetBankWaterCount.put(Thread.currentThread().getName(), 1);</span><br><span class="line">                    // 银流计算完成，插入一个屏障</span><br><span class="line">                    try &#123;</span><br><span class="line">                        c.await();</span><br><span class="line">                    &#125; catch (Exception e) &#123;</span><br><span class="line">                        e.printStackTrace();</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">            &#125;);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public void run() &#123;</span><br><span class="line">        int result = 0;</span><br><span class="line">        // 汇总每个sheet计算出的结果</span><br><span class="line">        for (Entry&lt;String, Integer&gt; sheet : sheetBankWaterCount.entrySet()) &#123;</span><br><span class="line">            result += sheet.getValue();</span><br><span class="line">        &#125;</span><br><span class="line">        // 将结果输出</span><br><span class="line">        sheetBankWaterCount.put(&quot;result&quot;, result);</span><br><span class="line">        System.out.println(result);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line">        BankWaterService bankWaterCount = new BankWaterService();</span><br><span class="line">        bankWaterCount.count();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="CyclicBarrier和CountDownLatch的区别"><a href="#CyclicBarrier和CountDownLatch的区别" class="headerlink" title="CyclicBarrier和CountDownLatch的区别"></a>CyclicBarrier和CountDownLatch的区别</h3><p>CountDownLatch的计数器只能使用一次，而CyclicBarrier的计数器可以使用reset()方法重置。所以CyclicBarrier能处理更为复杂的业务场景。例如，如果计算发生错误，可以重置计数器，并让线程重新执行一次。</p>
+<h3 id="控制并发线程数的Semaphore"><a href="#控制并发线程数的Semaphore" class="headerlink" title="控制并发线程数的Semaphore"></a>控制并发线程数的Semaphore</h3><p>Semaphore可以用于做流量控制，特别是公用资源有限的应用场景，比如数据库连接。假如有一个需求，要读取几万个文件的数据，因为都是IO密集型任务，我们可以启动几十个线程并发地读取，但是如果读到内存后，还需要存储到数据库中，而数据库的连接数只有10个，这时我们必须控制只有10个线程同时获取数据库连接保存数据，否则会报错无法获取数据库连接。这个时候，就可以使用Semaphore来做流量控制。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">package com.liaowz.concurrent.thread;</span><br><span class="line"></span><br><span class="line">import java.util.concurrent.ExecutorService;</span><br><span class="line">import java.util.concurrent.Executors;</span><br><span class="line">import java.util.concurrent.Semaphore;</span><br><span class="line"></span><br><span class="line">public class SemaphoreTest &#123;</span><br><span class="line">    private static final int THREAD_COUNT = 30;</span><br><span class="line">    private static ExecutorService threadPool = Executors.newFixedThreadPool(THREAD_COUNT);</span><br><span class="line">    private static Semaphore s = new Semaphore(10);</span><br><span class="line"></span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line">        for (int i = 0; i &lt; THREAD_COUNT; i++) &#123;</span><br><span class="line">            threadPool.execute(new Runnable() &#123;</span><br><span class="line">                @Override</span><br><span class="line">                public void run() &#123;</span><br><span class="line">                    try &#123;</span><br><span class="line">                        s.acquire();</span><br><span class="line">                        System.out.println(&quot;save data&quot;);</span><br><span class="line">                        s.release();</span><br><span class="line">                    &#125; catch (InterruptedException e) &#123;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;);</span><br><span class="line">        &#125;</span><br><span class="line">        threadPool.shutdown();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>Semaphore还提供一些其他方法，具体如下。<br>·intavailablePermits()：返回此信号量中当前可用的许可证数。<br>·intgetQueueLength()：返回正在等待获取许可证的线程数。<br>·booleanhasQueuedThreads()：是否有线程正在等待获取许可证。<br>·void reducePermits（int reduction）：减少reduction个许可证，是个protected方法。<br>·Collection getQueuedThreads()：返回所有等待获取许可证的线程集合，是个protected方法。</p>
+</blockquote>
+<h3 id="线程间交换数据的Exchanger"><a href="#线程间交换数据的Exchanger" class="headerlink" title="线程间交换数据的Exchanger"></a>线程间交换数据的Exchanger</h3><p>Exchanger（交换者）是一个用于线程间协作的工具类。Exchanger用于进行线程间的数据交换。它提供一个同步点，在这个同步点，两个线程可以交换彼此的数据。这两个线程通过exchange方法交换数据，如果第一个线程先执行exchange()方法，它会一直等待第二个线程也执行exchange方法，当两个线程都到达同步点时，这两个线程就可以交换数据，将本线程生产出来的数据传递给对方。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">package com.liaowz.concurrent.thread;</span><br><span class="line"></span><br><span class="line">import java.util.concurrent.Exchanger;</span><br><span class="line">import java.util.concurrent.ExecutorService;</span><br><span class="line">import java.util.concurrent.Executors;</span><br><span class="line"></span><br><span class="line">public class ExchangerTest &#123;</span><br><span class="line">    private static final Exchanger&lt;String&gt; exgr = new Exchanger&lt;String&gt;();</span><br><span class="line">    private static ExecutorService threadPool = Executors.newFixedThreadPool(2);</span><br><span class="line"></span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line">        threadPool.execute(new Runnable() &#123;</span><br><span class="line">            @Override</span><br><span class="line">            public void run() &#123;</span><br><span class="line">                try &#123;</span><br><span class="line">                    String A = &quot;银行流水A&quot;; // A录入银行流水数据</span><br><span class="line">                    exgr.exchange(A);</span><br><span class="line">                &#125; catch (InterruptedException e) &#123;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">        threadPool.execute(new Runnable() &#123;</span><br><span class="line">            @Override</span><br><span class="line">            public void run() &#123;</span><br><span class="line">                try &#123;</span><br><span class="line">                    String B = &quot;银行流水B&quot;; // B录入银行流水数据</span><br><span class="line">                    String A = exgr.exchange(&quot;B&quot;);</span><br><span class="line">                    System.out.println(&quot;A和B数据是否一致：&quot; + A.equals(B) + &quot;，A录入的是：&quot; + A + &quot;，B录入是：&quot; + B);</span><br><span class="line">                &#125; catch (InterruptedException e) &#123;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">        threadPool.shutdown();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    <footer>
+      
+        
+  
+  <div class="categories">
+    <a href="/categories/并发/">并发</a>
+  </div>
+
+        
+	<!-- 注释国外分享组件，加载慢
+        
+  <div class="addthis addthis_toolbox addthis_default_style">
+    
+      <a class="addthis_button_facebook_like" fb:like:layout="button_count"></a>
+    
+    
+      <a class="addthis_button_tweet"></a>
+    
+    
+      <a class="addthis_button_google_plusone" g:plusone:size="medium"></a>
+    
+    
+      <a class="addthis_button_pinterest_pinit" pi:pinit:layout="horizontal"></a>
+    
+    <a class="addthis_counter addthis_pill_style"></a>
+  </div>
+  <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js"></script>
+
+	-->
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+
+
+<!--畅言评论插件start-->
+<!--PC和WAP自适应版-->
+<div id="SOHUCS" sid="http://www.liaowz.com/2017/11/29/173232/" ></div> 
+<script type="text/javascript"> 
+(function(){ 
+var appid = 'cyt4fsQhf'; 
+var conf = 'prod_881782ec7502f89f05db305db86c4d4b'; 
+var width = window.innerWidth || document.documentElement.clientWidth; 
+if (width < 960) { 
+window.document.write('<script id="changyan_mobile_js" charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/mobile/wap-js/changyan_mobile.js?client_id=' + appid + '&conf=' + conf + '"><\/script>'); } else { var loadJs=function(d,a){var c=document.getElementsByTagName("head")[0]||document.head||document.documentElement;var b=document.createElement("script");b.setAttribute("type","text/javascript");b.setAttribute("charset","UTF-8");b.setAttribute("src",d);if(typeof a==="function"){if(window.attachEvent){b.onreadystatechange=function(){var e=b.readyState;if(e==="loaded"||e==="complete"){b.onreadystatechange=null;a()}}}else{b.onload=a}}c.appendChild(b)};loadJs("https://changyan.sohu.com/upload/changyan.js",function(){window.changyan.api.config({appid:appid,conf:conf})}); } })(); </script>
+<!--畅言评论插件end-->
+
+
+
+
+<!-- 注释多说评论插件
+<div class="ds-thread" data-thread-key="/2017/11/29/173232/" data-title="并发工具类介绍" data-url="http://www.liaowz.com/2017/11/29/173232/"></div>
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"liaowz"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+</script>
+-->
+
+
+
+
+
+<!-- 注释原代码
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+      <div id="fb-root"></div>
+<script>
+  (function(d, s, id) {
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) return;
+    js = d.createElement(s); js.id = id;
+    js.src = "//connect.facebook.net/en_US/all.js#xfbml=1&appId=123456789012345";
+    fjs.parentNode.insertBefore(js, fjs);
+  }(document, 'script', 'facebook-jssdk'));
+</script>
+
+<div class="fb-comments" data-href="http://www.liaowz.com/2017/11/29/173232/index.html" data-num-posts="5" data-width="840" data-colorscheme="light"></div>
+      
+  
+</section>
+-->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div></div>
+    <aside id="sidebar" class="alignright">
+  <div class="search">
+  <form action="//google.com/search" method="get" accept-charset="utf-8">
+    <input type="search" name="q" results="0" placeholder="搜索">
+    <input type="hidden" name="q" value="site:www.liaowz.com">
+  </form>
+</div>
+
+  
+<div class="widget tag">
+  <h3 class="title">分类</h3>
+  <ul class="entry">
+  
+    <li><a href="/categories/cat/">cat</a><small>1</small></li>
+  
+    <li><a href="/categories/elasticsearch/">elasticsearch</a><small>1</small></li>
+  
+    <li><a href="/categories/git/">git</a><small>4</small></li>
+  
+    <li><a href="/categories/hexo/">hexo</a><small>1</small></li>
+  
+    <li><a href="/categories/idea-IDE/">idea IDE</a><small>2</small></li>
+  
+    <li><a href="/categories/java8/">java8</a><small>3</small></li>
+  
+    <li><a href="/categories/jvm/">jvm</a><small>3</small></li>
+  
+    <li><a href="/categories/kotlin/">kotlin</a><small>3</small></li>
+  
+    <li><a href="/categories/linux/">linux</a><small>1</small></li>
+  
+    <li><a href="/categories/mongodb/">mongodb</a><small>1</small></li>
+  
+    <li><a href="/categories/netty/">netty</a><small>19</small></li>
+  
+    <li><a href="/categories/python/">python</a><small>4</small></li>
+  
+    <li><a href="/categories/rabbitmq/">rabbitmq</a><small>3</small></li>
+  
+    <li><a href="/categories/react/">react</a><small>1</small></li>
+  
+    <li><a href="/categories/redis/">redis</a><small>4</small></li>
+  
+    <li><a href="/categories/spring/">spring</a><small>1</small></li>
+  
+    <li><a href="/categories/springboot/">springboot</a><small>1</small></li>
+  
+    <li><a href="/categories/tool/">tool</a><small>6</small></li>
+  
+    <li><a href="/categories/基础/">基础</a><small>4</small></li>
+  
+    <li><a href="/categories/并发/">并发</a><small>8</small></li>
+  
+    <li><a href="/categories/数据库/">数据库</a><small>2</small></li>
+  
+    <li><a href="/categories/架构/">架构</a><small>3</small></li>
+  
+    <li><a href="/categories/测试/">测试</a><small>1</small></li>
+  
+    <li><a href="/categories/生活/">生活</a><small>2</small></li>
+  
+    <li><a href="/categories/看书/">看书</a><small>1</small></li>
+  
+  </ul>
+</div>
+
+
+<!-- ע��Ĭ�Ϸ������
+
+
+
+-->
+
+
+<!-- �����������
+
+
+
+<div class="widget tag">
+  <h3 class="title">分类</h3>
+     <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/cat/">cat</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/elasticsearch/">elasticsearch</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/git/">git</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/hexo/">hexo</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/idea-IDE/">idea IDE</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/java8/">java8</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/jvm/">jvm</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/kotlin/">kotlin</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/linux/">linux</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/mongodb/">mongodb</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/netty/">netty</a><span class="category-list-count">19</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/python/">python</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/rabbitmq/">rabbitmq</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/react/">react</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/redis/">redis</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/spring/">spring</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/springboot/">springboot</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/tool/">tool</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/基础/">基础</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/并发/">并发</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/">数据库</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/架构/">架构</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/测试/">测试</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/生活/">生活</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/看书/">看书</a><span class="category-list-count">1</span></li></ul> 
+</div>
+
+
+
+-->
+
+  
+<div class="widget tag">
+  <h3 class="title">标签</h3>
+  <ul class="entry">
+  
+    <li><a href="/tags/HashMap/">HashMap</a><small>1</small></li>
+  
+    <li><a href="/tags/NIO/">NIO</a><small>5</small></li>
+  
+    <li><a href="/tags/effective-java-3/">effective java 3</a><small>1</small></li>
+  
+    <li><a href="/tags/gradle/">gradle</a><small>1</small></li>
+  
+    <li><a href="/tags/grpc/">grpc</a><small>1</small></li>
+  
+    <li><a href="/tags/hexo/">hexo</a><small>1</small></li>
+  
+    <li><a href="/tags/http/">http</a><small>1</small></li>
+  
+    <li><a href="/tags/idea/">idea</a><small>2</small></li>
+  
+    <li><a href="/tags/java8/">java8</a><small>2</small></li>
+  
+    <li><a href="/tags/jedis/">jedis</a><small>1</small></li>
+  
+    <li><a href="/tags/json/">json</a><small>1</small></li>
+  
+    <li><a href="/tags/linux/">linux</a><small>1</small></li>
+  
+    <li><a href="/tags/maven/">maven</a><small>1</small></li>
+  
+    <li><a href="/tags/netty源码/">netty源码</a><small>3</small></li>
+  
+    <li><a href="/tags/nosql/">nosql</a><small>1</small></li>
+  
+    <li><a href="/tags/react/">react</a><small>1</small></li>
+  
+    <li><a href="/tags/redis/">redis</a><small>3</small></li>
+  
+    <li><a href="/tags/rpc/">rpc</a><small>2</small></li>
+  
+    <li><a href="/tags/spel/">spel</a><small>1</small></li>
+  
+    <li><a href="/tags/thrift/">thrift</a><small>1</small></li>
+  
+    <li><a href="/tags/websocket/">websocket</a><small>2</small></li>
+  
+    <li><a href="/tags/健康/">健康</a><small>2</small></li>
+  
+    <li><a href="/tags/命令/">命令</a><small>2</small></li>
+  
+    <li><a href="/tags/镜像/">镜像</a><small>1</small></li>
+  
+  </ul>
+</div>
+
+
+  
+<div class="widget tag">
+  <h3 class="title">最新文章</h3>
+  <ul class="entry">
+    
+      <li>
+        <a href="/2018/07/21/212047/">mongodb安装（Windows）</a>
+      </li>
+    
+      <li>
+        <a href="/2018/07/20/111747/">Dianping CAT 安装说明文档</a>
+      </li>
+    
+      <li>
+        <a href="/2018/06/29/143647/">effective java 3</a>
+      </li>
+    
+      <li>
+        <a href="/2018/06/03/142947/">spring boot笔记</a>
+      </li>
+    
+      <li>
+        <a href="/2018/04/02/211447/">轻松搭建Redis缓存高可用集群</a>
+      </li>
+    
+  </ul>
+</div>
+
+
+  <div class="widget tag">
+<h3 class="title">友情链接</h3>
+<ul class="entry">
+<li><a href="http://www.baidu.com/" title="百度">百度</a></li>
+<li><a href="http://www.sina.com.cn" title="新浪">新浪</a></li>
+<li><a href="http://maciektalaska.github.io" title="maciektalaska">maciektalaska</a></li>
+<li><a href="http://x.bbyc.cn/" title="maciektalaska">神的禁区</a></li>
+
+
+</ul>
+</div>
+
+  <iframe width="100%" height="600" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=600&fansRow=1&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=1&isFans=1&uid=2064204680&verifier=b3464355&dpc=1"></iframe>
+</aside>
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div class="alignleft">
+  
+  Copyright &copy; 2018 Liaowz 鄂ICP备15016859号-1
+  
+</div>
+<div class="clearfix"></div></footer>
+  <script src="https://code.jquery.com/jquery-2.0.3.js" integrity="sha256-lCf+LfUffUxr81+W0ZFpcU0LQyuZ3Bj0F2DQNCxTgSI=" crossorigin="anonymous"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+  $('.fancybox').fancybox();
+})(jQuery);
+</script>
+
+</body>
+</html>

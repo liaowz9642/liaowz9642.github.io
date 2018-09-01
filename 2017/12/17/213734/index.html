@@ -1,0 +1,416 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>工作队列（一） | 种逗南山-hexo博客</title>
+  <meta name="author" content="Liaowz">
+  
+  <meta name="description" content="rabbitmq工作队列">
+  
+  <meta name="Keywords" content="rabbitmq,mq">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="工作队列（一）"/>
+
+  <meta property="og:site_name" content="种逗南山-hexo博客"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  <link href="/img/favicon.ico" rel="icon" type="image/x-ico">
+  <link rel="alternate" href="/atom.xml" title="种逗南山-hexo博客" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+
+</head>
+
+
+<body>
+  <header id="header" class="inner"><div class="alignleft">
+  <h1><a href="/">种逗南山-hexo博客</a></h1>
+  <h2><a href="/">众里寻他千百度，蓦然回首那人却在灯火阑珊处。</a></h2>
+</div>
+<nav id="main-nav" class="alignright">
+  <ul>
+    
+      <li><a href="/">首页</a></li>
+    
+      <li><a href="/archives">归档</a></li>
+    
+      <li><a href="/about">关于</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+<div class="clearfix"></div>
+</header>
+  <div id="content" class="inner">
+    <div id="main-col" class="alignleft"><div id="wrapper"><article class="post">
+  
+  <div class="post-content">
+    <header>
+      
+        <div class="icon"></div>
+        <time datetime="2017-12-17T13:37:34.000Z"><a href="/2017/12/17/213734/">2017-12-17 21:37:34</a></time>
+      
+      
+  
+    <h1 class="title">工作队列（一）</h1>
+  
+
+    </header>
+    <div class="entry">
+      
+        <p>在这篇教程中，我们将创建一个工作队列（Work Queue），它会发送一些耗时的任务给多个工作者（Worker）。<br><a id="more"></a></p>
+<h3 id="循环调度"><a href="#循环调度" class="headerlink" title="循环调度"></a>循环调度</h3><p>使用工作队列的一个好处就是它能够并行的处理队列。如果堆积了很多任务，我们只需要添加更多的工作者（workers）就可以了，扩展很简单。</p>
+<p>默认来说，RabbitMQ会按顺序得把消息发送给每个消费者（consumer）。平均每个消费者都会收到同等数量得消息。这种发送消息得方式叫做——轮询（round-robin）。试着添加三个或更多得工作者（workers）。</p>
+<h3 id="消息确认"><a href="#消息确认" class="headerlink" title="消息确认"></a>消息确认</h3><p>我们不想丢失任何任务消息。如果一个工作者（worker）挂掉了，我们希望任务会重新发送给其他的工作者（worker）。</p>
+<p>为了防止消息丢失，RabbitMQ提供了消息响应（acknowledgments）。消费者会通过一个ack（响应），告诉RabbitMQ已经收到并处理了某条消息，然后RabbitMQ就会释放并删除这条消息。</p>
+<p>如果消费者（consumer）挂掉了，没有发送响应，RabbitMQ就会认为消息没有被完全处理，然后重新发送给其他消费者（consumer）。这样，及时工作者（workers）偶尔的挂掉，也不会丢失消息。</p>
+<p>消息是没有超时这个概念的；当工作者与它断开连的时候，RabbitMQ会重新发送消息。这样在处理一个耗时非常长的消息任务的时候就不会出问题了。</p>
+<blockquote>
+<p>忘记确认：<br>一个很容易犯的错误就是忘了basic_ack，后果很严重。消息在你的程序退出之后就会重新发送，如果它不能够释放没响应的消息，RabbitMQ就会占用越来越多的内存。<br>为了排除这种错误，你可以使用rabbitmqctl命令，输出messages_unacknowledged字段：<br>$ sudo rabbitmqctl list_queues name messages_ready messages_unacknowledged<br>Listing queues …<br>hello    0       0<br>…done.</p>
+</blockquote>
+<h3 id="消息持久化"><a href="#消息持久化" class="headerlink" title="消息持久化"></a>消息持久化</h3><p>如果你没有特意告诉RabbitMQ，那么在它退出或者崩溃的时候，将会丢失所有队列和消息。为了确保信息不会丢失，有两个事情是需要注意的：我们必须把“队列”和“消息”设为持久化。</p>
+<p>首先，为了不让队列消失，需要把队列声明为持久化（durable）：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">channel.queueDeclare(&quot;task_queue&quot;, durable, false, false, null);</span><br></pre></td></tr></table></figure>
+<p>这个queue_declare必须在生产者（producer）和消费者（consumer）对应的代码中修改。</p>
+<p>这时候，我们就可以确保在RabbitMq重启之后queue_declare队列不会丢失。需要<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">setting MessageProperties (which implements BasicProperties) to the value PERSISTENT_TEXT_PLAIN.</span><br><span class="line"></span><br><span class="line">channel.basicPublish(&quot;&quot;, &quot;task_queue&quot;,</span><br><span class="line">            MessageProperties.PERSISTENT_TEXT_PLAIN,</span><br><span class="line">            message.getBytes());</span><br></pre></td></tr></table></figure></p>
+<blockquote>
+<p>注意：消息持久化<br>将消息设为持久化并不能完全保证不会丢失。以上代码只是告诉了RabbitMq要把消息存到硬盘，但从RabbitMq收到消息到保存之间还是有一个很小的间隔时间。因为RabbitMq并不是所有的消息都使用fsync(2)——它有可能只是保存到缓存中，并不一定会写到硬盘中。并不能保证真正的持久化，但已经足够应付我们的简单工作队列。如果你一定要保证持久化，参考<a href="https://www.rabbitmq.com/confirms.html" target="_blank" rel="noopener">https://www.rabbitmq.com/confirms.html</a></p>
+</blockquote>
+<h3 id="公平调度"><a href="#公平调度" class="headerlink" title="公平调度"></a>公平调度</h3><p>你应该已经发现，它仍旧没有按照我们期望的那样进行分发。比如有两个工作者（workers），处理奇数消息的比较繁忙，处理偶数消息的比较轻松。然而RabbitMQ并不知道这些，它仍然一如既往的派发消息。</p>
+<p>这时因为RabbitMQ只管分发进入队列的消息，不会关心有多少消费者（consumer）没有作出响应。它盲目的把第n-th条消息发给第n-th个消费者。</p>
+<p>我们可以使用basic.qos方法，并设置prefetch_count=1。这样是告诉RabbitMQ，再同一时刻，不要发送超过1条消息给一个工作者（worker），直到它已经处理了上一条消息并且作出了响应。这样，RabbitMQ就会把消息分发给下一个空闲的工作者（worker）。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">channel.basic_qos(prefetch_count=1)</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>qos参数（ The value defines the max number of unacknowledged deliveries that are permitted on a channel）<br>关于队列大小：<br>如果所有的工作者都处理繁忙状态，你的队列就会被填满。你需要留意这个问题，要么添加更多的工作者（workers），要么使用其他策略。</p>
+</blockquote>
+<h3 id="本文参考"><a href="#本文参考" class="headerlink" title="本文参考"></a>本文参考</h3><p>参考：<a href="http://rabbitmq.mr-ping.com/tutorials_with_python/[2]Work_Queues.html" target="_blank" rel="noopener">http://rabbitmq.mr-ping.com/tutorials_with_python/[2]Work_Queues.html</a></p>
+
+      
+    </div>
+    <footer>
+      
+        
+  
+  <div class="categories">
+    <a href="/categories/rabbitmq/">rabbitmq</a>
+  </div>
+
+        
+	<!-- 注释国外分享组件，加载慢
+        
+  <div class="addthis addthis_toolbox addthis_default_style">
+    
+      <a class="addthis_button_facebook_like" fb:like:layout="button_count"></a>
+    
+    
+      <a class="addthis_button_tweet"></a>
+    
+    
+      <a class="addthis_button_google_plusone" g:plusone:size="medium"></a>
+    
+    
+      <a class="addthis_button_pinterest_pinit" pi:pinit:layout="horizontal"></a>
+    
+    <a class="addthis_counter addthis_pill_style"></a>
+  </div>
+  <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js"></script>
+
+	-->
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+
+
+<!--畅言评论插件start-->
+<!--PC和WAP自适应版-->
+<div id="SOHUCS" sid="http://www.liaowz.com/2017/12/17/213734/" ></div> 
+<script type="text/javascript"> 
+(function(){ 
+var appid = 'cyt4fsQhf'; 
+var conf = 'prod_881782ec7502f89f05db305db86c4d4b'; 
+var width = window.innerWidth || document.documentElement.clientWidth; 
+if (width < 960) { 
+window.document.write('<script id="changyan_mobile_js" charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/mobile/wap-js/changyan_mobile.js?client_id=' + appid + '&conf=' + conf + '"><\/script>'); } else { var loadJs=function(d,a){var c=document.getElementsByTagName("head")[0]||document.head||document.documentElement;var b=document.createElement("script");b.setAttribute("type","text/javascript");b.setAttribute("charset","UTF-8");b.setAttribute("src",d);if(typeof a==="function"){if(window.attachEvent){b.onreadystatechange=function(){var e=b.readyState;if(e==="loaded"||e==="complete"){b.onreadystatechange=null;a()}}}else{b.onload=a}}c.appendChild(b)};loadJs("https://changyan.sohu.com/upload/changyan.js",function(){window.changyan.api.config({appid:appid,conf:conf})}); } })(); </script>
+<!--畅言评论插件end-->
+
+
+
+
+<!-- 注释多说评论插件
+<div class="ds-thread" data-thread-key="/2017/12/17/213734/" data-title="工作队列（一）" data-url="http://www.liaowz.com/2017/12/17/213734/"></div>
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"liaowz"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+</script>
+-->
+
+
+
+
+
+<!-- 注释原代码
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+      <div id="fb-root"></div>
+<script>
+  (function(d, s, id) {
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) return;
+    js = d.createElement(s); js.id = id;
+    js.src = "//connect.facebook.net/en_US/all.js#xfbml=1&appId=123456789012345";
+    fjs.parentNode.insertBefore(js, fjs);
+  }(document, 'script', 'facebook-jssdk'));
+</script>
+
+<div class="fb-comments" data-href="http://www.liaowz.com/2017/12/17/213734/index.html" data-num-posts="5" data-width="840" data-colorscheme="light"></div>
+      
+  
+</section>
+-->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div></div>
+    <aside id="sidebar" class="alignright">
+  <div class="search">
+  <form action="//google.com/search" method="get" accept-charset="utf-8">
+    <input type="search" name="q" results="0" placeholder="搜索">
+    <input type="hidden" name="q" value="site:www.liaowz.com">
+  </form>
+</div>
+
+  
+<div class="widget tag">
+  <h3 class="title">分类</h3>
+  <ul class="entry">
+  
+    <li><a href="/categories/cat/">cat</a><small>1</small></li>
+  
+    <li><a href="/categories/elasticsearch/">elasticsearch</a><small>1</small></li>
+  
+    <li><a href="/categories/git/">git</a><small>4</small></li>
+  
+    <li><a href="/categories/hexo/">hexo</a><small>1</small></li>
+  
+    <li><a href="/categories/idea-IDE/">idea IDE</a><small>2</small></li>
+  
+    <li><a href="/categories/java8/">java8</a><small>3</small></li>
+  
+    <li><a href="/categories/jvm/">jvm</a><small>3</small></li>
+  
+    <li><a href="/categories/kotlin/">kotlin</a><small>3</small></li>
+  
+    <li><a href="/categories/linux/">linux</a><small>1</small></li>
+  
+    <li><a href="/categories/mongodb/">mongodb</a><small>1</small></li>
+  
+    <li><a href="/categories/netty/">netty</a><small>19</small></li>
+  
+    <li><a href="/categories/python/">python</a><small>4</small></li>
+  
+    <li><a href="/categories/rabbitmq/">rabbitmq</a><small>3</small></li>
+  
+    <li><a href="/categories/react/">react</a><small>1</small></li>
+  
+    <li><a href="/categories/redis/">redis</a><small>4</small></li>
+  
+    <li><a href="/categories/spring/">spring</a><small>1</small></li>
+  
+    <li><a href="/categories/springboot/">springboot</a><small>1</small></li>
+  
+    <li><a href="/categories/tool/">tool</a><small>6</small></li>
+  
+    <li><a href="/categories/基础/">基础</a><small>4</small></li>
+  
+    <li><a href="/categories/并发/">并发</a><small>8</small></li>
+  
+    <li><a href="/categories/数据库/">数据库</a><small>2</small></li>
+  
+    <li><a href="/categories/架构/">架构</a><small>3</small></li>
+  
+    <li><a href="/categories/测试/">测试</a><small>1</small></li>
+  
+    <li><a href="/categories/生活/">生活</a><small>2</small></li>
+  
+    <li><a href="/categories/看书/">看书</a><small>1</small></li>
+  
+  </ul>
+</div>
+
+
+<!-- ע��Ĭ�Ϸ������
+
+
+
+-->
+
+
+<!-- �����������
+
+
+
+<div class="widget tag">
+  <h3 class="title">分类</h3>
+     <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/cat/">cat</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/elasticsearch/">elasticsearch</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/git/">git</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/hexo/">hexo</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/idea-IDE/">idea IDE</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/java8/">java8</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/jvm/">jvm</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/kotlin/">kotlin</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/linux/">linux</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/mongodb/">mongodb</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/netty/">netty</a><span class="category-list-count">19</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/python/">python</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/rabbitmq/">rabbitmq</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/react/">react</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/redis/">redis</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/spring/">spring</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/springboot/">springboot</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/tool/">tool</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/基础/">基础</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/并发/">并发</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/">数据库</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/架构/">架构</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/测试/">测试</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/生活/">生活</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/看书/">看书</a><span class="category-list-count">1</span></li></ul> 
+</div>
+
+
+
+-->
+
+  
+<div class="widget tag">
+  <h3 class="title">标签</h3>
+  <ul class="entry">
+  
+    <li><a href="/tags/HashMap/">HashMap</a><small>1</small></li>
+  
+    <li><a href="/tags/NIO/">NIO</a><small>5</small></li>
+  
+    <li><a href="/tags/effective-java-3/">effective java 3</a><small>1</small></li>
+  
+    <li><a href="/tags/gradle/">gradle</a><small>1</small></li>
+  
+    <li><a href="/tags/grpc/">grpc</a><small>1</small></li>
+  
+    <li><a href="/tags/hexo/">hexo</a><small>1</small></li>
+  
+    <li><a href="/tags/http/">http</a><small>1</small></li>
+  
+    <li><a href="/tags/idea/">idea</a><small>2</small></li>
+  
+    <li><a href="/tags/java8/">java8</a><small>2</small></li>
+  
+    <li><a href="/tags/jedis/">jedis</a><small>1</small></li>
+  
+    <li><a href="/tags/json/">json</a><small>1</small></li>
+  
+    <li><a href="/tags/linux/">linux</a><small>1</small></li>
+  
+    <li><a href="/tags/maven/">maven</a><small>1</small></li>
+  
+    <li><a href="/tags/netty源码/">netty源码</a><small>3</small></li>
+  
+    <li><a href="/tags/nosql/">nosql</a><small>1</small></li>
+  
+    <li><a href="/tags/react/">react</a><small>1</small></li>
+  
+    <li><a href="/tags/redis/">redis</a><small>3</small></li>
+  
+    <li><a href="/tags/rpc/">rpc</a><small>2</small></li>
+  
+    <li><a href="/tags/spel/">spel</a><small>1</small></li>
+  
+    <li><a href="/tags/thrift/">thrift</a><small>1</small></li>
+  
+    <li><a href="/tags/websocket/">websocket</a><small>2</small></li>
+  
+    <li><a href="/tags/健康/">健康</a><small>2</small></li>
+  
+    <li><a href="/tags/命令/">命令</a><small>2</small></li>
+  
+    <li><a href="/tags/镜像/">镜像</a><small>1</small></li>
+  
+  </ul>
+</div>
+
+
+  
+<div class="widget tag">
+  <h3 class="title">最新文章</h3>
+  <ul class="entry">
+    
+      <li>
+        <a href="/2018/07/21/212047/">mongodb安装（Windows）</a>
+      </li>
+    
+      <li>
+        <a href="/2018/07/20/111747/">Dianping CAT 安装说明文档</a>
+      </li>
+    
+      <li>
+        <a href="/2018/06/29/143647/">effective java 3</a>
+      </li>
+    
+      <li>
+        <a href="/2018/06/03/142947/">spring boot笔记</a>
+      </li>
+    
+      <li>
+        <a href="/2018/04/02/211447/">轻松搭建Redis缓存高可用集群</a>
+      </li>
+    
+  </ul>
+</div>
+
+
+  <div class="widget tag">
+<h3 class="title">友情链接</h3>
+<ul class="entry">
+<li><a href="http://www.baidu.com/" title="百度">百度</a></li>
+<li><a href="http://www.sina.com.cn" title="新浪">新浪</a></li>
+<li><a href="http://maciektalaska.github.io" title="maciektalaska">maciektalaska</a></li>
+<li><a href="http://x.bbyc.cn/" title="maciektalaska">神的禁区</a></li>
+
+
+</ul>
+</div>
+
+  <iframe width="100%" height="600" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=600&fansRow=1&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=1&isFans=1&uid=2064204680&verifier=b3464355&dpc=1"></iframe>
+</aside>
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div class="alignleft">
+  
+  Copyright &copy; 2018 Liaowz 鄂ICP备15016859号-1
+  
+</div>
+<div class="clearfix"></div></footer>
+  <script src="https://code.jquery.com/jquery-2.0.3.js" integrity="sha256-lCf+LfUffUxr81+W0ZFpcU0LQyuZ3Bj0F2DQNCxTgSI=" crossorigin="anonymous"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+  $('.fancybox').fancybox();
+})(jQuery);
+</script>
+
+</body>
+</html>

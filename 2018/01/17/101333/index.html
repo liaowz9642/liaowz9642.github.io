@@ -1,0 +1,465 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>python基础和语法糖 | 种逗南山-hexo博客</title>
+  <meta name="author" content="Liaowz">
+  
+  <meta name="description" content="python基础和语法糖">
+  
+  <meta name="Keywords" content="python基础和语法糖">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="python基础和语法糖"/>
+
+  <meta property="og:site_name" content="种逗南山-hexo博客"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  <link href="/img/favicon.ico" rel="icon" type="image/x-ico">
+  <link rel="alternate" href="/atom.xml" title="种逗南山-hexo博客" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+
+</head>
+
+
+<body>
+  <header id="header" class="inner"><div class="alignleft">
+  <h1><a href="/">种逗南山-hexo博客</a></h1>
+  <h2><a href="/">众里寻他千百度，蓦然回首那人却在灯火阑珊处。</a></h2>
+</div>
+<nav id="main-nav" class="alignright">
+  <ul>
+    
+      <li><a href="/">首页</a></li>
+    
+      <li><a href="/archives">归档</a></li>
+    
+      <li><a href="/about">关于</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+<div class="clearfix"></div>
+</header>
+  <div id="content" class="inner">
+    <div id="main-col" class="alignleft"><div id="wrapper"><article class="post">
+  
+  <div class="post-content">
+    <header>
+      
+        <div class="icon"></div>
+        <time datetime="2018-01-17T02:13:33.000Z"><a href="/2018/01/17/101333/">2018-01-17 10:13:33</a></time>
+      
+      
+  
+    <h1 class="title">python基础和语法糖</h1>
+  
+
+    </header>
+    <div class="entry">
+      
+        <p>python基础和语法糖，只说重点，细枝末节略去。<br><a id="more"></a></p>
+<h3 id="引号"><a href="#引号" class="headerlink" title="引号"></a>引号</h3><p>1.单引号和双引号效果完全相同<br>2.三引号可用来指定多行字符串，中间可自由使用单引号和双引号<br>3.引号中间可使用转义字符，如换行\n<br>4.若要引号中间字符全部原样输出，需要在字符串前增加r 或 R 来指定一个 原始（ Raw） 字符串，如r”hello \n world”</p>
+<h3 id="print方法"><a href="#print方法" class="headerlink" title="print方法"></a>print方法</h3><p>print方法会换行，防止换行可用<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">print(&apos;a&apos;, end=&apos;&apos;)</span><br><span class="line">print(&apos;b&apos;, end=&apos; &apos;)</span><br><span class="line">print(&apos;c&apos;)</span><br></pre></td></tr></table></figure></p>
+<p>输出<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ab c</span><br></pre></td></tr></table></figure></p>
+<h3 id="format方法"><a href="#format方法" class="headerlink" title="format方法"></a>format方法</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">age = 20</span><br><span class="line">name = &apos;Swaroop&apos;</span><br><span class="line">print(&apos;&#123;0&#125; was &#123;1&#125; years old when he wrote this book&apos;.format(name, age))</span><br><span class="line">print(&apos;Why is &#123;0&#125; playing with that python?&apos;.format(name))</span><br><span class="line"># 对于浮点数 &apos;0.333&apos; 保留小数点(.)后三位</span><br><span class="line">print(&apos;&#123;0:.3f&#125;&apos;.format(1.0/3))</span><br><span class="line">print(&apos;&#123;name&#125; wrote &#123;book&#125;&apos;.format(name=&apos;Swaroop&apos;, book=&apos;A Byte of Python&apos;))</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>{0} {1}中0和1可省略，省略参数按顺序填充</p>
+</blockquote>
+<h3 id="缩进"><a href="#缩进" class="headerlink" title="缩进"></a>缩进</h3><p>空白区在各行的开头非常重要。这被称作 缩进（ Indentation），这意味着放置在一起的语句必须拥有相同的缩进。每一组这样的语句被称为 块（ block）</p>
+<blockquote>
+<p>错误的缩进可能会导致错误</p>
+</blockquote>
+<p>如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">i = 5</span><br><span class="line"># 下面将发生错误，注意行首有一个空格</span><br><span class="line"> print(&apos;Value is&apos;, i)</span><br><span class="line">print(&apos;I repeat, the value is&apos;, i)</span><br></pre></td></tr></table></figure></p>
+<h3 id="运算符和表达式"><a href="#运算符和表达式" class="headerlink" title="运算符和表达式"></a>运算符和表达式</h3><p><img src="/img/python/2018-01-17_105302.png" alt=""></p>
+<h3 id="控制语句"><a href="#控制语句" class="headerlink" title="控制语句"></a>控制语句</h3><p>if/while</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">number = 23</span><br><span class="line">running = True</span><br><span class="line">while running:</span><br><span class="line">	guess = int(input(&apos;Enter an integer : &apos;))</span><br><span class="line">	if guess == number:</span><br><span class="line">		print(&apos;Congratulations, you guessed it.&apos;)</span><br><span class="line">		# 这将导致 while 循环中止</span><br><span class="line">		running = False</span><br><span class="line">	elif guess &lt; number:</span><br><span class="line">		print(&apos;No, it is a little higher than that.&apos;)</span><br><span class="line">	else:</span><br><span class="line">		print(&apos;No, it is a little lower than that.&apos;)</span><br><span class="line">else:</span><br><span class="line">	print(&apos;The while loop is over.&apos;)</span><br><span class="line">	# 在这里你可以做你想做的任何事</span><br><span class="line">print(&apos;Done&apos;)</span><br></pre></td></tr></table></figure>
+<p>for</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">for i in range(1, 5):</span><br><span class="line">	print(i)</span><br><span class="line">else:</span><br><span class="line">	print(&apos;The for loop is over&apos;)</span><br></pre></td></tr></table></figure>
+<p>break/continue</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">while True:</span><br><span class="line">	s = input(&apos;Enter something : &apos;)</span><br><span class="line">	if s == &apos;quit&apos;:</span><br><span class="line">		break</span><br><span class="line">	if len(s) &lt; 3:</span><br><span class="line">		print(&apos;Too small&apos;)</span><br><span class="line">		continue</span><br><span class="line">	print(&apos;Input is of sufficient length&apos;)</span><br><span class="line">	# 自此处起继续进行其它任何处理</span><br></pre></td></tr></table></figure>
+<h3 id="可变参数"><a href="#可变参数" class="headerlink" title="可变参数"></a>可变参数</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">def total(a=5, *numbers, **phonebook):</span><br><span class="line">	print(&apos;a&apos;, a)</span><br><span class="line">	#遍历元组中的所有项目</span><br><span class="line">	for single_item in numbers:</span><br><span class="line">		print(&apos;single_item&apos;, single_item)</span><br><span class="line">	#遍历字典中的所有项目</span><br><span class="line">	for first_part, second_part in phonebook.items():</span><br><span class="line">		print(first_part,second_part)</span><br><span class="line">print(total(10,1,2,3,Jack=1123,John=2231,Inge=1560))</span><br></pre></td></tr></table></figure>
+<p>输出：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">a 10</span><br><span class="line">single_item 1</span><br><span class="line">single_item 2</span><br><span class="line">single_item 3</span><br><span class="line">Inge 1560</span><br><span class="line">John 2231</span><br><span class="line">Jack 1123</span><br><span class="line">None</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>* 数组参数<br>** 关键字参数（key-value形式）</p>
+</blockquote>
+<h3 id="文档字符串（-Documentation-Strings）"><a href="#文档字符串（-Documentation-Strings）" class="headerlink" title="文档字符串（ Documentation Strings）"></a>文档字符串（ Documentation Strings）</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">def print_max(x, y):</span><br><span class="line">	&apos;&apos;&apos;Prints the maximum of two numbers.打印两个数值中的最大数。</span><br><span class="line"></span><br><span class="line">	The two values must be integers.这两个数都应该是整数&apos;&apos;&apos;</span><br><span class="line">	# 如果可能，将其转换至整数类型</span><br><span class="line">	x = int(x)</span><br><span class="line">	y = int(y)</span><br><span class="line">	if x &gt; y:</span><br><span class="line">		print(x, &apos;is maximum&apos;)</span><br><span class="line">	else:</span><br><span class="line">		print(y, &apos;is maximum&apos;)</span><br><span class="line">print_max(3, 5)</span><br><span class="line">print(print_max.__doc__)</span><br></pre></td></tr></table></figure>
+<p>该文档字符串所约定的是一串多行字符串，其中第一行以某一大写字母开始，以句号结束。第二行为空行，后跟的第三行开始是任何详细的解释说明。在此强烈建议你在你所有重要功能的所有文档字符串中都遵循这一约定。</p>
+<p>我们可以通过使用函数的 <strong>doc</strong> （ 注意其中的双下划綫） 属性（ 属于函数的名称） 来获取函数 print_max 的文档字符串属性。只消记住 Python将所有东西都视为一个对象，这其中自然包括函数。</p>
+<h3 id="模块"><a href="#模块" class="headerlink" title="模块"></a>模块</h3><ul>
+<li>系统模块</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">import sys</span><br><span class="line">print(&apos;The command line arguments are:&apos;)</span><br><span class="line">for i in sys.argv:</span><br><span class="line">	print(i)</span><br><span class="line">print(&apos;\n\nThe PYTHONPATH is&apos;, sys.path, &apos;\n&apos;)</span><br></pre></td></tr></table></figure>
+<p>输出：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">The command line arguments are:</span><br><span class="line">E:/workspace/PycharmProjects/helloworld/test3.py</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">The PYTHONPATH is [&apos;E:\\workspace\\PycharmProjects\\helloworld&apos;, &apos;E:\\workspace\\PycharmProjects\\helloworld&apos;, &apos;D:\\Program Files\\Python\\Python36\\python36.zip&apos;, &apos;D:\\Program Files\\Python\\Python36\\DLLs&apos;, &apos;D:\\Program Files\\Python\\Python36\\lib&apos;, &apos;D:\\Program Files\\Python\\Python36&apos;, &apos;D:\\Program Files\\Python\\Python36\\lib\\site-packages&apos;]</span><br></pre></td></tr></table></figure>
+<p>我们通过 import 语句导入 sys 模块，其是一个内置模块。因此 Python 知道应该在哪里找到它，如果它不是一个已编译好的模块，即用 Python 编写的模块，那么 Python 解释器将从它的sys.path 变量所提供的目录中进行搜索。</p>
+<blockquote>
+<p>官方系统模块手册：<a href="https://docs.python.org/3/py-modindex.html" target="_blank" rel="noopener">https://docs.python.org/3/py-modindex.html</a></p>
+</blockquote>
+<ul>
+<li>编写自己的模块</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">def say_hi():</span><br><span class="line">	print(&apos;Hi, this is mymodule speaking.&apos;)</span><br><span class="line"></span><br><span class="line">	</span><br><span class="line">__version__ = &apos;0.1&apos;</span><br></pre></td></tr></table></figure>
+<p>另一模块中</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">import mymodule</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">mymodule.say_hi()</span><br><span class="line">print(&apos;Version&apos;, mymodule.__version__)</span><br></pre></td></tr></table></figure>
+<p>模块名称：__name__<br>当前模块默认名称为：__main__<br>查看模块属性：print(dir(sys))<br>查看当前模块属性：print(dir())</p>
+<h3 id="数据结构"><a href="#数据结构" class="headerlink" title="数据结构"></a>数据结构</h3><p>Python 中有四种内置的数据结构——列表（ List） 、元组（ Tuple） 、字典（ Dictionary） 和集合（ Set） 。</p>
+<ul>
+<li>列表</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"># This is my shopping list</span><br><span class="line">shoplist = [&apos;apple&apos;, &apos;mango&apos;, &apos;carrot&apos;, &apos;banana&apos;]</span><br><span class="line"></span><br><span class="line">print(&apos;I have&apos;, len(shoplist), &apos;items to purchase.&apos;)</span><br><span class="line"></span><br><span class="line">print(&apos;These items are:&apos;, end=&apos; &apos;)</span><br><span class="line">for item in shoplist:</span><br><span class="line">    print(item, end=&apos; &apos;)</span><br><span class="line"></span><br><span class="line">print(&apos;\nI also have to buy rice.&apos;)</span><br><span class="line">shoplist.append(&apos;rice&apos;)</span><br><span class="line">print(&apos;My shopping list is now&apos;, shoplist)</span><br><span class="line"></span><br><span class="line">print(&apos;I will sort my list now&apos;)</span><br><span class="line">shoplist.sort()</span><br><span class="line">print(&apos;Sorted shopping list is&apos;, shoplist)</span><br><span class="line"></span><br><span class="line">print(&apos;The first item I will buy is&apos;, shoplist[0])</span><br><span class="line">olditem = shoplist[0]</span><br><span class="line">del shoplist[0]</span><br><span class="line">print(&apos;I bought the&apos;, olditem)</span><br><span class="line">print(&apos;My shopping list is now&apos;, shoplist)</span><br></pre></td></tr></table></figure>
+<p>输出：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">I have 4 items to purchase.</span><br><span class="line">These items are: apple mango carrot banana </span><br><span class="line">I also have to buy rice.</span><br><span class="line">My shopping list is now [&apos;apple&apos;, &apos;mango&apos;, &apos;carrot&apos;, &apos;banana&apos;, &apos;rice&apos;]</span><br><span class="line">I will sort my list now</span><br><span class="line">Sorted shopping list is [&apos;apple&apos;, &apos;banana&apos;, &apos;carrot&apos;, &apos;mango&apos;, &apos;rice&apos;]</span><br><span class="line">The first item I will buy is apple</span><br><span class="line">I bought the apple</span><br><span class="line">My shopping list is now [&apos;banana&apos;, &apos;carrot&apos;, &apos;mango&apos;, &apos;rice&apos;]</span><br></pre></td></tr></table></figure>
+<ul>
+<li>元组</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"># 我会推荐你总是使用括号</span><br><span class="line"># 来指明元组的开始与结束</span><br><span class="line"># 尽管括号是一个可选选项。</span><br><span class="line"># 明了胜过晦涩，显式优于隐式。</span><br><span class="line">zoo = (&apos;python&apos;, &apos;elephant&apos;, &apos;penguin&apos;)</span><br><span class="line">print(&apos;Number of animals in the zoo is&apos;, len(zoo))</span><br><span class="line"></span><br><span class="line">new_zoo = &apos;monkey&apos;, &apos;camel&apos;, zoo</span><br><span class="line">print(&apos;Number of cages in the new zoo is&apos;, len(new_zoo))</span><br><span class="line">print(&apos;All animals in new zoo are&apos;, new_zoo)</span><br><span class="line">print(&apos;Animals brought from old zoo are&apos;, new_zoo[2])</span><br><span class="line">print(&apos;Last animal brought from old zoo is&apos;, new_zoo[2][2])</span><br><span class="line">print(&apos;Number of animals in the new zoo is&apos;,len(new_zoo)-1+len(new_zoo[2]))</span><br></pre></td></tr></table></figure>
+<p>输出：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Number of animals in the zoo is 3</span><br><span class="line">Number of cages in the new zoo is 3</span><br><span class="line">All animals in new zoo are (&apos;monkey&apos;, &apos;camel&apos;, (&apos;python&apos;, &apos;elephant&apos;, &apos;penguin&apos;))</span><br><span class="line">Animals brought from old zoo are (&apos;python&apos;, &apos;elephant&apos;, &apos;penguin&apos;)</span><br><span class="line">Last animal brought from old zoo is penguin</span><br><span class="line">Number of animals in the new zoo is 5</span><br></pre></td></tr></table></figure>
+<ul>
+<li>字典</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"># “ab”是地址（ Address） 簿（ Book） 的缩写</span><br><span class="line"></span><br><span class="line">ab = &#123;</span><br><span class="line">    &apos;Swaroop&apos;: &apos;swaroop@swaroopch.com&apos;,</span><br><span class="line">    &apos;Larry&apos;: &apos;larry@wall.org&apos;,</span><br><span class="line">    &apos;Matsumoto&apos;: &apos;matz@ruby-lang.org&apos;,</span><br><span class="line">    &apos;Spammer&apos;: &apos;spammer@hotmail.com&apos;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">print(&quot;Swaroop&apos;s address is&quot;, ab[&apos;Swaroop&apos;])</span><br><span class="line"></span><br><span class="line"># 删除一对键值—值配对</span><br><span class="line">del ab[&apos;Spammer&apos;]</span><br><span class="line"></span><br><span class="line">print(&apos;\nThere are &#123;&#125; contacts in the address-book\n&apos;.format(len(ab)))</span><br><span class="line"></span><br><span class="line">for name, address in ab.items():</span><br><span class="line">    print(&apos;Contact &#123;&#125; at &#123;&#125;&apos;.format(name, address))</span><br><span class="line"></span><br><span class="line"># 添加一对键值—值配对</span><br><span class="line">ab[&apos;Guido&apos;] = &apos;guido@python.org&apos;</span><br><span class="line"></span><br><span class="line">if &apos;Guido&apos; in ab:</span><br><span class="line">    print(&quot;\nGuido&apos;s address is&quot;, ab[&apos;Guido&apos;])</span><br></pre></td></tr></table></figure>
+<p>输出：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">Swaroop&apos;s address is swaroop@swaroopch.com</span><br><span class="line"></span><br><span class="line">There are 3 contacts in the address-book</span><br><span class="line"></span><br><span class="line">Contact Swaroop at swaroop@swaroopch.com</span><br><span class="line">Contact Larry at larry@wall.org</span><br><span class="line">Contact Matsumoto at matz@ruby-lang.org</span><br><span class="line"></span><br><span class="line">Guido&apos;s address is guido@python.org</span><br></pre></td></tr></table></figure>
+<ul>
+<li>索引、下标、步长</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">shoplist = [&apos;apple&apos;, &apos;mango&apos;, &apos;carrot&apos;, &apos;banana&apos;]</span><br><span class="line">name = &apos;swaroop&apos;</span><br><span class="line"></span><br><span class="line"># Indexing or &apos;Subscription&apos; operation #</span><br><span class="line"># 索引或“下标（ Subscription） ”操作符 #</span><br><span class="line">print(&apos;Item 0 is&apos;, shoplist[0])</span><br><span class="line">print(&apos;Item 1 is&apos;, shoplist[1])</span><br><span class="line">print(&apos;Item 2 is&apos;, shoplist[2])</span><br><span class="line">print(&apos;Item 3 is&apos;, shoplist[3])</span><br><span class="line">print(&apos;Item -1 is&apos;, shoplist[-1])</span><br><span class="line">print(&apos;Item -2 is&apos;, shoplist[-2])</span><br><span class="line">print(&apos;Character 0 is&apos;, name[0])</span><br><span class="line"></span><br><span class="line"># Slicing on a list #</span><br><span class="line">print(&apos;Item 1 to 3 is&apos;, shoplist[1:3])</span><br><span class="line">print(&apos;Item 2 to end is&apos;, shoplist[2:])</span><br><span class="line">print(&apos;Item 1 to -1 is&apos;, shoplist[1:-1])</span><br><span class="line">print(&apos;Item start to end is&apos;, shoplist[:])</span><br><span class="line"></span><br><span class="line"># 从某一字符串中切片 #</span><br><span class="line">print(&apos;characters 1 to 3 is&apos;, name[1:3])</span><br><span class="line">print(&apos;characters 2 to end is&apos;, name[2:])</span><br><span class="line">print(&apos;characters 1 to -1 is&apos;, name[1:-1])</span><br><span class="line">print(&apos;characters start to end is&apos;, name[:])</span><br><span class="line"></span><br><span class="line"># 步长 #</span><br><span class="line"></span><br><span class="line">print(shoplist[::1])</span><br><span class="line">print(shoplist[::2])</span><br><span class="line">print(shoplist[::3])</span><br><span class="line">print(shoplist[::-1])</span><br></pre></td></tr></table></figure>
+<p>输出：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">Item 0 is apple</span><br><span class="line">Item 1 is mango</span><br><span class="line">Item 2 is carrot</span><br><span class="line">Item 3 is banana</span><br><span class="line">Item -1 is banana</span><br><span class="line">Item -2 is carrot</span><br><span class="line">Character 0 is s</span><br><span class="line">Item 1 to 3 is [&apos;mango&apos;, &apos;carrot&apos;]</span><br><span class="line">Item 2 to end is [&apos;carrot&apos;, &apos;banana&apos;]</span><br><span class="line">Item 1 to -1 is [&apos;mango&apos;, &apos;carrot&apos;]</span><br><span class="line">Item start to end is [&apos;apple&apos;, &apos;mango&apos;, &apos;carrot&apos;, &apos;banana&apos;]</span><br><span class="line">characters 1 to 3 is wa</span><br><span class="line">characters 2 to end is aroop</span><br><span class="line">characters 1 to -1 is waroo</span><br><span class="line">characters start to end is swaroop</span><br><span class="line">[&apos;apple&apos;, &apos;mango&apos;, &apos;carrot&apos;, &apos;banana&apos;]</span><br><span class="line">[&apos;apple&apos;, &apos;carrot&apos;]</span><br><span class="line">[&apos;apple&apos;, &apos;banana&apos;]</span><br><span class="line">[&apos;banana&apos;, &apos;carrot&apos;, &apos;mango&apos;, &apos;apple&apos;]</span><br></pre></td></tr></table></figure>
+<ul>
+<li>集合</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; bri = set([&apos;brazil&apos;, &apos;russia&apos;, &apos;india&apos;])</span><br><span class="line">&gt;&gt;&gt; &apos;india&apos; in bri</span><br><span class="line">True</span><br><span class="line">&gt;&gt;&gt; &apos;usa&apos; in bri</span><br><span class="line">False</span><br><span class="line">&gt;&gt;&gt; bric = bri.copy()</span><br><span class="line">&gt;&gt;&gt; bric.add(&apos;china&apos;)</span><br><span class="line">&gt;&gt;&gt; bric.issuperset(bri)</span><br><span class="line">True</span><br><span class="line">&gt;&gt;&gt; bri.remove(&apos;russia&apos;)</span><br><span class="line">&gt;&gt;&gt; bri &amp; bric # OR bri.intersection(bric)</span><br><span class="line">&#123;&apos;brazil&apos;, &apos;india&apos;&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    <footer>
+      
+        
+  
+  <div class="categories">
+    <a href="/categories/python/">python</a>
+  </div>
+
+        
+	<!-- 注释国外分享组件，加载慢
+        
+  <div class="addthis addthis_toolbox addthis_default_style">
+    
+      <a class="addthis_button_facebook_like" fb:like:layout="button_count"></a>
+    
+    
+      <a class="addthis_button_tweet"></a>
+    
+    
+      <a class="addthis_button_google_plusone" g:plusone:size="medium"></a>
+    
+    
+      <a class="addthis_button_pinterest_pinit" pi:pinit:layout="horizontal"></a>
+    
+    <a class="addthis_counter addthis_pill_style"></a>
+  </div>
+  <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js"></script>
+
+	-->
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+
+
+<!--畅言评论插件start-->
+<!--PC和WAP自适应版-->
+<div id="SOHUCS" sid="http://www.liaowz.com/2018/01/17/101333/" ></div> 
+<script type="text/javascript"> 
+(function(){ 
+var appid = 'cyt4fsQhf'; 
+var conf = 'prod_881782ec7502f89f05db305db86c4d4b'; 
+var width = window.innerWidth || document.documentElement.clientWidth; 
+if (width < 960) { 
+window.document.write('<script id="changyan_mobile_js" charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/mobile/wap-js/changyan_mobile.js?client_id=' + appid + '&conf=' + conf + '"><\/script>'); } else { var loadJs=function(d,a){var c=document.getElementsByTagName("head")[0]||document.head||document.documentElement;var b=document.createElement("script");b.setAttribute("type","text/javascript");b.setAttribute("charset","UTF-8");b.setAttribute("src",d);if(typeof a==="function"){if(window.attachEvent){b.onreadystatechange=function(){var e=b.readyState;if(e==="loaded"||e==="complete"){b.onreadystatechange=null;a()}}}else{b.onload=a}}c.appendChild(b)};loadJs("https://changyan.sohu.com/upload/changyan.js",function(){window.changyan.api.config({appid:appid,conf:conf})}); } })(); </script>
+<!--畅言评论插件end-->
+
+
+
+
+<!-- 注释多说评论插件
+<div class="ds-thread" data-thread-key="/2018/01/17/101333/" data-title="python基础和语法糖" data-url="http://www.liaowz.com/2018/01/17/101333/"></div>
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"liaowz"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+</script>
+-->
+
+
+
+
+
+<!-- 注释原代码
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+      <div id="fb-root"></div>
+<script>
+  (function(d, s, id) {
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) return;
+    js = d.createElement(s); js.id = id;
+    js.src = "//connect.facebook.net/en_US/all.js#xfbml=1&appId=123456789012345";
+    fjs.parentNode.insertBefore(js, fjs);
+  }(document, 'script', 'facebook-jssdk'));
+</script>
+
+<div class="fb-comments" data-href="http://www.liaowz.com/2018/01/17/101333/index.html" data-num-posts="5" data-width="840" data-colorscheme="light"></div>
+      
+  
+</section>
+-->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div></div>
+    <aside id="sidebar" class="alignright">
+  <div class="search">
+  <form action="//google.com/search" method="get" accept-charset="utf-8">
+    <input type="search" name="q" results="0" placeholder="搜索">
+    <input type="hidden" name="q" value="site:www.liaowz.com">
+  </form>
+</div>
+
+  
+<div class="widget tag">
+  <h3 class="title">分类</h3>
+  <ul class="entry">
+  
+    <li><a href="/categories/cat/">cat</a><small>1</small></li>
+  
+    <li><a href="/categories/elasticsearch/">elasticsearch</a><small>1</small></li>
+  
+    <li><a href="/categories/git/">git</a><small>4</small></li>
+  
+    <li><a href="/categories/hexo/">hexo</a><small>1</small></li>
+  
+    <li><a href="/categories/idea-IDE/">idea IDE</a><small>2</small></li>
+  
+    <li><a href="/categories/java8/">java8</a><small>3</small></li>
+  
+    <li><a href="/categories/jvm/">jvm</a><small>3</small></li>
+  
+    <li><a href="/categories/kotlin/">kotlin</a><small>3</small></li>
+  
+    <li><a href="/categories/linux/">linux</a><small>1</small></li>
+  
+    <li><a href="/categories/mongodb/">mongodb</a><small>1</small></li>
+  
+    <li><a href="/categories/netty/">netty</a><small>19</small></li>
+  
+    <li><a href="/categories/python/">python</a><small>4</small></li>
+  
+    <li><a href="/categories/rabbitmq/">rabbitmq</a><small>3</small></li>
+  
+    <li><a href="/categories/react/">react</a><small>1</small></li>
+  
+    <li><a href="/categories/redis/">redis</a><small>4</small></li>
+  
+    <li><a href="/categories/spring/">spring</a><small>1</small></li>
+  
+    <li><a href="/categories/springboot/">springboot</a><small>1</small></li>
+  
+    <li><a href="/categories/tool/">tool</a><small>6</small></li>
+  
+    <li><a href="/categories/基础/">基础</a><small>4</small></li>
+  
+    <li><a href="/categories/并发/">并发</a><small>8</small></li>
+  
+    <li><a href="/categories/数据库/">数据库</a><small>2</small></li>
+  
+    <li><a href="/categories/架构/">架构</a><small>3</small></li>
+  
+    <li><a href="/categories/测试/">测试</a><small>1</small></li>
+  
+    <li><a href="/categories/生活/">生活</a><small>2</small></li>
+  
+    <li><a href="/categories/看书/">看书</a><small>1</small></li>
+  
+  </ul>
+</div>
+
+
+<!-- ע��Ĭ�Ϸ������
+
+
+
+-->
+
+
+<!-- �����������
+
+
+
+<div class="widget tag">
+  <h3 class="title">分类</h3>
+     <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/cat/">cat</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/elasticsearch/">elasticsearch</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/git/">git</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/hexo/">hexo</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/idea-IDE/">idea IDE</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/java8/">java8</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/jvm/">jvm</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/kotlin/">kotlin</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/linux/">linux</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/mongodb/">mongodb</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/netty/">netty</a><span class="category-list-count">19</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/python/">python</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/rabbitmq/">rabbitmq</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/react/">react</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/redis/">redis</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/spring/">spring</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/springboot/">springboot</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/tool/">tool</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/基础/">基础</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/并发/">并发</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/">数据库</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/架构/">架构</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/测试/">测试</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/生活/">生活</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/看书/">看书</a><span class="category-list-count">1</span></li></ul> 
+</div>
+
+
+
+-->
+
+  
+<div class="widget tag">
+  <h3 class="title">标签</h3>
+  <ul class="entry">
+  
+    <li><a href="/tags/HashMap/">HashMap</a><small>1</small></li>
+  
+    <li><a href="/tags/NIO/">NIO</a><small>5</small></li>
+  
+    <li><a href="/tags/effective-java-3/">effective java 3</a><small>1</small></li>
+  
+    <li><a href="/tags/gradle/">gradle</a><small>1</small></li>
+  
+    <li><a href="/tags/grpc/">grpc</a><small>1</small></li>
+  
+    <li><a href="/tags/hexo/">hexo</a><small>1</small></li>
+  
+    <li><a href="/tags/http/">http</a><small>1</small></li>
+  
+    <li><a href="/tags/idea/">idea</a><small>2</small></li>
+  
+    <li><a href="/tags/java8/">java8</a><small>2</small></li>
+  
+    <li><a href="/tags/jedis/">jedis</a><small>1</small></li>
+  
+    <li><a href="/tags/json/">json</a><small>1</small></li>
+  
+    <li><a href="/tags/linux/">linux</a><small>1</small></li>
+  
+    <li><a href="/tags/maven/">maven</a><small>1</small></li>
+  
+    <li><a href="/tags/netty源码/">netty源码</a><small>3</small></li>
+  
+    <li><a href="/tags/nosql/">nosql</a><small>1</small></li>
+  
+    <li><a href="/tags/react/">react</a><small>1</small></li>
+  
+    <li><a href="/tags/redis/">redis</a><small>3</small></li>
+  
+    <li><a href="/tags/rpc/">rpc</a><small>2</small></li>
+  
+    <li><a href="/tags/spel/">spel</a><small>1</small></li>
+  
+    <li><a href="/tags/thrift/">thrift</a><small>1</small></li>
+  
+    <li><a href="/tags/websocket/">websocket</a><small>2</small></li>
+  
+    <li><a href="/tags/健康/">健康</a><small>2</small></li>
+  
+    <li><a href="/tags/命令/">命令</a><small>2</small></li>
+  
+    <li><a href="/tags/镜像/">镜像</a><small>1</small></li>
+  
+  </ul>
+</div>
+
+
+  
+<div class="widget tag">
+  <h3 class="title">最新文章</h3>
+  <ul class="entry">
+    
+      <li>
+        <a href="/2018/07/21/212047/">mongodb安装（Windows）</a>
+      </li>
+    
+      <li>
+        <a href="/2018/07/20/111747/">Dianping CAT 安装说明文档</a>
+      </li>
+    
+      <li>
+        <a href="/2018/06/29/143647/">effective java 3</a>
+      </li>
+    
+      <li>
+        <a href="/2018/06/03/142947/">spring boot笔记</a>
+      </li>
+    
+      <li>
+        <a href="/2018/04/02/211447/">轻松搭建Redis缓存高可用集群</a>
+      </li>
+    
+  </ul>
+</div>
+
+
+  <div class="widget tag">
+<h3 class="title">友情链接</h3>
+<ul class="entry">
+<li><a href="http://www.baidu.com/" title="百度">百度</a></li>
+<li><a href="http://www.sina.com.cn" title="新浪">新浪</a></li>
+<li><a href="http://maciektalaska.github.io" title="maciektalaska">maciektalaska</a></li>
+<li><a href="http://x.bbyc.cn/" title="maciektalaska">神的禁区</a></li>
+
+
+</ul>
+</div>
+
+  <iframe width="100%" height="600" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=600&fansRow=1&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=1&isFans=1&uid=2064204680&verifier=b3464355&dpc=1"></iframe>
+</aside>
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div class="alignleft">
+  
+  Copyright &copy; 2018 Liaowz 鄂ICP备15016859号-1
+  
+</div>
+<div class="clearfix"></div></footer>
+  <script src="https://code.jquery.com/jquery-2.0.3.js" integrity="sha256-lCf+LfUffUxr81+W0ZFpcU0LQyuZ3Bj0F2DQNCxTgSI=" crossorigin="anonymous"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+  $('.fancybox').fancybox();
+})(jQuery);
+</script>
+
+</body>
+</html>
